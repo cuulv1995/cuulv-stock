@@ -2,3 +2,5 @@
 # Ví dụ:
 # FPT
 # HPG
+VIX
+VRE
