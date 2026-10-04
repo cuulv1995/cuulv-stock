@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bảng dòng tiền MCDX</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: đèn thị trường → Top 5 → danh sách theo rổ → duy trì → theo dõi → bối cảnh → kiểm chứng; bấm mã mở chi tiết */
+:root{
+  --bg:#f5f6f4; --surface:#ffffff; --surface-2:#eef0ec; --line:#dcdfd8; --ink:#1b2420; --ink-2:#55605a; --ink-3:#86908a;
+  --accent:#1f5f8b; --accent-soft:#e3edf4; --mid:#8a4fb0;
+  --banker:#c8312b; --hot:#e0a21a; --retail:#79b07a; --banker-soft:#f6dedc;
+  --good:#1f8a4c; --bad:#c8312b; --warn:#b7791f; --good-soft:#dff1e6; --bad-soft:#f8e1df; --warn-soft:#fbefd9;
+  --heat-0:#f1efe9; --heat-1:#f6d4cf; --heat-2:#eba59c; --heat-3:#dc6c61; --heat-4:#b8302a;
+  --shadow:0 1px 2px rgba(20,30,25,.06),0 4px 16px rgba(20,30,25,.05);
+  --f-body:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-num:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#121614; --surface:#1a201d; --surface-2:#222a26; --line:#2f3833; --ink:#e7ece9; --ink-2:#a9b3ad; --ink-3:#7c8781;
+  --accent:#6fb0dc; --accent-soft:#1d3342; --mid:#c39be0;
+  --banker:#ec5a50; --hot:#f0b93a; --retail:#6fa872; --banker-soft:#3a2321;
+  --good:#4cc07a; --bad:#ef6a5f; --warn:#e8b04f; --good-soft:#1c3326; --bad-soft:#3a2321; --warn-soft:#3a3020;
+  --heat-0:#232a26; --heat-1:#47302c; --heat-2:#7a3a33; --heat-3:#b2463c; --heat-4:#e2584c;
+  --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --bg:#121614; --surface:#1a201d; --surface-2:#222a26; --line:#2f3833; --ink:#e7ece9; --ink-2:#a9b3ad; --ink-3:#7c8781;
+  --accent:#6fb0dc; --accent-soft:#1d3342; --mid:#c39be0;
+  --banker:#ec5a50; --hot:#f0b93a; --retail:#6fa872; --banker-soft:#3a2321;
+  --good:#4cc07a; --bad:#ef6a5f; --warn:#e8b04f; --good-soft:#1c3326; --bad-soft:#3a2321; --warn-soft:#3a3020;
+  --heat-0:#232a26; --heat-1:#47302c; --heat-2:#7a3a33; --heat-3:#b2463c; --heat-4:#e2584c;
+  --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark; }
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.45;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.wrap{max-width:1240px;margin:0 auto;padding-inline:20px;padding-block:20px 48px;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{margin:0;text-wrap:balance}
+h1{font-size:22px;font-weight:700;letter-spacing:-.01em}
+h2{font-size:16px;font-weight:600}
+h3{font-size:14px;font-weight:600}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.muted{color:var(--ink-2)} .faint{color:var(--ink-3)} .small{font-size:12px}
+.eyebrow{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.up{color:var(--good)} .down{color:var(--bad)}
+
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.session{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 10px;font-size:12px;color:var(--ink-2);white-space:nowrap}
+.chip.warn{border-color:var(--warn);color:var(--ink);background:var(--warn-soft)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--hot);display:inline-block}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.panel-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:start}
+.note{font-size:12px;color:var(--ink-3);margin:0}
+
+/* regime */
+.regime{display:grid;grid-template-columns:minmax(220px,1.1fr) repeat(3,minmax(0,1fr));gap:0;padding:0;overflow:hidden}
+.regime>div{padding:16px;display:flex;flex-direction:column;gap:4px;min-width:0;border-left:1px solid var(--line)}
+.regime>div:first-child{border-left:0}
+.state{display:inline-flex;align-items:center;gap:8px;font-size:20px;font-weight:700}
+.state i{width:12px;height:12px;border-radius:50%}
+.st-attack{background:var(--good-soft)} .st-attack .state i{background:var(--good)}
+.st-caution{background:var(--warn-soft)} .st-caution .state i{background:var(--warn)}
+.st-defense{background:var(--bad-soft)} .st-defense .state i{background:var(--bad)}
+.regime .v{font-family:var(--f-num);font-size:20px;font-weight:500}
+.check{font-size:12px;display:flex;align-items:center;gap:6px}
+.check b{font-weight:600}
+
+/* top5 */
+.top5{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.pick{border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px;background:var(--surface);cursor:pointer;text-align:left;font:inherit;color:inherit;min-width:0}
+.pick:hover{background:var(--surface-2)}
+.pick:focus-visible,tbody tr.click:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.pick-top{display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+.pick-top .s{font-size:18px;font-weight:700}
+.pick-top .sc{font-family:var(--f-num);font-size:18px;color:var(--accent);font-weight:500}
+.parts{display:grid;grid-template-columns:auto 1fr auto;gap:3px 8px;align-items:center;font-size:11px;color:var(--ink-2)}
+.parts .bar{height:5px;background:var(--surface-2);border-radius:3px;overflow:hidden}
+.parts .bar i{display:block;height:100%;background:var(--accent)}
+.parts .n{font-family:var(--f-num);text-align:right}
+.plan{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 10px;font-size:12px;border-top:1px solid var(--line);padding-top:8px}
+.plan span{color:var(--ink-3)} .plan b{font-family:var(--f-num);font-weight:500;text-align:right}
+.flags{display:flex;flex-wrap:wrap;gap:4px}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;margin-inline:-4px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:11px;font-weight:600;color:var(--ink-3);text-align:right;padding:6px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+th.l,td.l{text-align:left}
+td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;font-family:var(--f-num);font-variant-numeric:tabular-nums}
+tbody tr.click{cursor:pointer}
+tbody tr.click:hover{background:var(--surface-2)}
+td.sym{font-family:var(--f-body);font-weight:600}
+td.sym small{display:block;font-weight:400;color:var(--ink-3);font-size:11px;white-space:normal;max-width:110px}
+td small.chg{display:block;font-size:11px}
+.rank{color:var(--ink-3);font-size:12px;width:20px}
+.score{display:flex;align-items:center;gap:6px;justify-content:flex-end}
+.score .bar{width:36px;height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.score .bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.tag{display:inline-block;font-family:var(--f-body);font-size:11px;padding:1px 7px;border-radius:999px;background:var(--banker-soft);color:var(--banker);font-weight:600}
+.tag.cross{background:var(--accent-soft);color:var(--accent)}
+.tag.hotx{background:var(--warn-soft);color:var(--warn)}
+.tag.good{background:var(--good-soft);color:var(--good)}
+.empty{color:var(--ink-2);font-family:var(--f-body);text-align:left;padding:12px 6px}
+
+.status{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-body);font-weight:600;font-size:12px}
+.status i{width:8px;height:8px;border-radius:50%}
+.s-exit{color:var(--bad)} .s-exit i{background:var(--bad)}
+.s-watch{color:var(--warn)} .s-watch i{background:var(--warn)}
+.s-hold{color:var(--good)} .s-hold i{background:var(--good)}
+.s-unknown{color:var(--ink-3)} .s-unknown i{background:var(--ink-3)}
+
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.legend i.line{height:2px;width:14px;border-radius:1px}
+svg text{font-family:var(--f-num);fill:var(--ink-3);font-size:10.5px}
+.chart{position:relative;width:100%}
+.tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:8px;padding:8px 10px;font-size:12px;min-width:160px;z-index:5}
+.tip .t{font-weight:600;margin-bottom:4px}
+.tip .r{display:flex;justify-content:space-between;gap:12px;font-family:var(--f-num)}
+.heat{display:grid;gap:3px;font-size:12px;overflow-x:auto}
+.heat .c{height:24px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:var(--f-num);font-size:11px;color:var(--ink)}
+.heat .rl{display:flex;align-items:center;font-size:12px;color:var(--ink-2);white-space:nowrap;padding-right:8px}
+.heat .ch{font-family:var(--f-num);font-size:10.5px;color:var(--ink-3);text-align:center}
+.scale{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-3)}
+.scale i{width:22px;height:10px;border-radius:2px;display:inline-block}
+.leaders{display:flex;flex-wrap:wrap;gap:8px}
+
+.overlay{position:fixed;inset:0;background:rgba(10,15,12,.45);z-index:20;display:flex;justify-content:flex-end}
+.sheet{background:var(--bg);width:min(860px,100%);height:100%;overflow-y:auto;padding:20px;padding-top:calc(20px + env(safe-area-inset-top,0px));padding-bottom:calc(32px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:16px;box-shadow:var(--shadow)}
+.sheet-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.sheet-head .big{font-family:var(--f-num);font-size:26px;font-weight:500}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:6px 12px;font:inherit;cursor:pointer}
+.btn:hover{background:var(--surface-2)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.verdict{display:flex;flex-wrap:wrap;gap:8px}
+.fnet{display:flex;align-items:center;gap:6px;justify-content:flex-end}
+.fnet .b{width:60px;height:8px;position:relative;background:var(--surface-2);border-radius:2px}
+.fnet .b i{position:absolute;top:0;bottom:0;border-radius:2px}
+footer{font-size:12px;color:var(--ink-3);line-height:1.6;max-width:80ch}
+
+@media (max-width:1100px){ .top5{grid-template-columns:repeat(3,minmax(0,1fr))} }
+@media (max-width:980px){ .grid-2{grid-template-columns:minmax(0,1fr)} .regime{grid-template-columns:repeat(2,minmax(0,1fr))} .regime>div:nth-child(3){border-left:0} .regime>div:nth-child(n+3){border-top:1px solid var(--line)} }
+@media (max-width:640px){ .top5{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:480px){ .wrap{padding-inline:16px} .top5{grid-template-columns:minmax(0,1fr)} .regime{grid-template-columns:minmax(0,1fr)} .regime>div{border-left:0;border-top:1px solid var(--line)} .regime>div:first-child{border-top:0} .sheet{padding-inline:16px} }
+@media (prefers-reduced-motion:no-preference){ .sheet{animation:slide .18s ease-out} @keyframes slide{from{transform:translateX(24px);opacity:.6}to{transform:none;opacity:1}} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Sàng lọc sau phiên · HOSE · VN30 và VNMidcap</div>
+      <h1>Bảng dòng tiền MCDX</h1>
+    </div>
+    <div class="session" id="session"></div>
+  </header>
+
+  <section class="panel regime" id="regime" aria-label="Đèn xu hướng thị trường"></section>
+
+  <section class="panel" aria-labelledby="hTop5">
+    <div class="panel-head"><h2 id="hTop5">Top 5 tín hiệu mạnh nhất</h2><span class="faint small">Điểm tổng hợp 0–100 · bấm để xem chi tiết</span></div>
+    <div id="top5Note" class="note" hidden></div>
+    <div class="top5" id="top5"></div>
+    <p class="note">MCDX 30 · sức mạnh giá so với VN-Index (RS) 25 · ngành hút tiền 15 · khối lượng xác nhận 15 · nền giá 15. Cắt lỗ gợi ý = mức cao hơn giữa giá − 2 × ATR14 và MA20. Mục tiêu = đỉnh 60 phiên (hoặc 52 tuần, hoặc giá + 3 × ATR14).</p>
+  </section>
+
+  <div class="grid-2">
+    <section class="panel" aria-labelledby="hVN30">
+      <div class="panel-head"><h2 id="hVN30">Top 10 VN30 · dòng tiền mới vào</h2><span class="faint small" id="cVN30"></span></div>
+      <div class="tbl-wrap"><table><thead><tr><th class="l">#</th><th class="l">Mã</th><th>Điểm</th><th>Giá · %</th><th>Banker</th><th>Δ 5p</th><th>KL/TB20</th><th>RS</th><th>Ngoại 5p</th><th class="l">20 phiên</th></tr></thead><tbody id="tVN30"></tbody></table></div>
+    </section>
+    <section class="panel" aria-labelledby="hMID">
+      <div class="panel-head"><h2 id="hMID">Top 10 VNMidcap · dòng tiền mới vào</h2><span class="faint small" id="cMID"></span></div>
+      <div class="tbl-wrap"><table><thead><tr><th class="l">#</th><th class="l">Mã</th><th>Điểm</th><th>Giá · %</th><th>Banker</th><th>Δ 5p</th><th>KL/TB20</th><th>RS</th><th>Ngoại 5p</th><th class="l">20 phiên</th></tr></thead><tbody id="tMID"></tbody></table></div>
+    </section>
+  </div>
+  <p class="note" style="margin-top:-8px">Dòng tiền mới vào: Banker từ 0 lên trên 0 trong 5 phiên (nhãn "Mới") hoặc cắt lên MA10 hôm nay (nhãn "MA10"); GTGD TB20 ≥ 5 tỷ. Điểm = 60 × ΔBanker5/20 + 25 × min(KL/TB20, 3)/3 + 15 nếu khối ngoại mua ròng 5 phiên. Khối ngoại tính bằng tỷ đồng. RS 1–99 là xếp hạng sức mạnh giá trong rổ.</p>
+
+  <section class="panel" aria-labelledby="hSus">
+    <div class="panel-head"><h2 id="hSus">Top 10 dòng tiền lớn duy trì</h2><span class="faint small" id="cSus"></span></div>
+    <div class="tbl-wrap"><table><thead><tr><th class="l">#</th><th class="l">Mã</th><th class="l">Rổ</th><th>Chuỗi Banker ≥ 10</th><th>Banker TB</th><th>Banker</th><th>Giá · %</th><th>Giá trong chuỗi</th><th>Trên MA20</th><th>RS</th><th>Ngoại 5p</th><th class="l">Banker 20 phiên</th></tr></thead><tbody id="tSus"></tbody></table></div>
+    <p class="note">Banker ≥ 10 liên tục từ 5 phiên, Banker ≥ MA10, giá trên MA20; loại mã đã tăng quá 25% trong chuỗi. Xếp theo số phiên × Banker trung bình. Nhãn "Tăng nóng" khi giá cao hơn MA20 trên 10%.</p>
+  </section>
+
+  <div class="grid-2">
+    <section class="panel" aria-labelledby="hExit">
+      <div class="panel-head"><h2 id="hExit">Cảnh báo thoát · mã đang giữ</h2></div>
+      <div class="tbl-wrap"><table><thead><tr><th class="l">Mã</th><th class="l">Trạng thái</th><th>Giá</th><th>Banker</th><th>MA10</th><th>Cắt lỗ gợi ý</th><th class="l">Lý do</th></tr></thead><tbody id="tExit"></tbody></table></div>
+      <p class="note">Danh sách mã đang giữ lấy từ file config/holdings.txt trong repo.</p>
+    </section>
+    <section class="panel" aria-labelledby="hSec">
+      <div class="panel-head"><h2 id="hSec">Dòng tiền theo ngành</h2><span class="faint small">Banker trung bình, 10 phiên</span></div>
+      <div class="leaders" id="leaders"></div>
+      <div class="heat" id="heat"></div>
+      <div class="scale"><span>0</span><i style="background:var(--heat-0)"></i><i style="background:var(--heat-1)"></i><i style="background:var(--heat-2)"></i><i style="background:var(--heat-3)"></i><i style="background:var(--heat-4)"></i><span>20</span></div>
+    </section>
+  </div>
+
+  <div class="grid-2">
+    <section class="panel" aria-labelledby="hBr">
+      <div class="panel-head"><h2 id="hBr">Độ rộng dòng tiền lớn</h2><span class="faint small">% mã có Banker &gt; 0, 60 phiên</span></div>
+      <div class="legend"><span><i class="line" style="background:var(--accent)"></i>VN30</span><span><i class="line" style="background:var(--mid)"></i>VNMidcap</span></div>
+      <div class="chart" id="breadth"></div>
+      <h3 id="hIdx">VN-Index</h3>
+      <div class="chart" id="vnindex"></div>
+    </section>
+    <section class="panel" aria-labelledby="hPerf">
+      <div class="panel-head"><h2 id="hPerf">Hiệu quả tín hiệu trong quá khứ</h2><span class="faint small">Khoảng 1 năm dữ liệu</span></div>
+      <div class="tbl-wrap"><table><thead><tr><th class="l">Tín hiệu</th><th>Sau</th><th>Số lần</th><th>Tỷ lệ tăng</th><th>Lãi TB</th><th>VN-Index TB</th></tr></thead><tbody id="tPerf"></tbody></table></div>
+      <p class="note">Mỗi lần một mã thỏa điều kiện ở một phiên được tính là một lần tín hiệu; lãi đo từ giá đóng cửa phiên đó. Đây là thống kê quá khứ, không bảo đảm kết quả tương lai.</p>
+    </section>
+  </div>
+
+  <footer id="foot"></footer>
+</div>
+
+<div class="overlay" id="overlay" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="dTitle" id="sheet"></div>
+</div>
+
+<script id="data" type="application/json">/*__DATA__*/</script>
+<script>
+(function(){
+const D=JSON.parse(document.getElementById("data").textContent);
+const $=id=>document.getElementById(id);
+const NAME={VN30:"VN30",MID:"VNMidcap"};
+const nf=(v,d)=>v==null||isNaN(v)?"–":Number(v).toLocaleString("vi-VN",{minimumFractionDigits:d,maximumFractionDigits:d});
+const f0=v=>nf(v,0),f1=v=>nf(v,1),f2=v=>nf(v,2);
+const sgn=(v,f=f2)=>v==null||isNaN(v)?"–":(v>0?"+":"")+f(v);
+const cls=v=>v>0?"up":v<0?"down":"";
+const price=v=>v==null?"–":(v>=500?nf(v/1000,2):f2(v));
+const fmtD=iso=>iso.slice(8,10)+"/"+iso.slice(5,7);
+const fullD=iso=>iso.split("-").reverse().join("/");
+const heat=v=>v==null?"var(--heat-0)":v<2?"var(--heat-0)":v<6?"var(--heat-1)":v<10?"var(--heat-2)":v<15?"var(--heat-3)":"var(--heat-4)";
+const R=D.rows, S=D.stocks, DATES=D.series.dates;
+const NS="http://www.w3.org/2000/svg";
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e}
+function niceTicks(lo,hi,n){const span=hi-lo||1,s0=span/n,mag=Math.pow(10,Math.floor(Math.log10(s0))),e=s0/mag,st=(e>=7.5?10:e>=3.5?5:e>=1.5?2:1)*mag;const t=[];for(let v=Math.ceil(lo/st)*st;v<=hi+1e-9;v+=st)t.push(+v.toFixed(6));return t}
+
+/* header */
+const chips=[`<span class="chip num">Phiên ${fullD(D.date)}</span>`,`<span class="chip">Nguồn: ${D.source}</span>`,`<span class="chip">Cập nhật ${D.generated_at}</span>`];
+if(D.demo)chips.push(`<span class="chip warn"><span class="dot"></span>Dữ liệu giả lập</span>`);
+if(!D.complete&&!D.demo)chips.push(`<span class="chip warn"><span class="dot"></span>Chưa có dữ liệu phiên hôm nay, đang hiển thị phiên ${fullD(D.date)}</span>`);
+$("session").innerHTML=chips.join("");
+
+/* regime */
+const G=D.regime;
+const ok=b=>b?'<b class="up">✓</b>':'<b class="down">✗</b>';
+$("regime").className="panel regime st-"+G.state;
+$("regime").innerHTML=`
+ <div><span class="eyebrow">Đèn xu hướng thị trường</span><span class="state"><i></i>${G.label}</span><span class="small muted">Giải ngân tham khảo: <b>${G.alloc}</b>${G.state==="defense"?" · ẩn Top 5":""}</span></div>
+ <div><span class="eyebrow">VN-Index</span><span class="v">${f2(G.index)}</span><span class="small ${cls(G.index_chg)}">${sgn(G.index_chg)}%</span>
+   <span class="check">${ok(G.ma50!=null&&G.index>G.ma50)} Trên MA50 <span class="faint">${f0(G.ma50)}</span></span><span class="check">${ok(G.ma200==null||G.index>G.ma200)} Trên MA200 <span class="faint">${G.ma200==null?"chưa đủ":f0(G.ma200)}</span></span></div>
+ <div><span class="eyebrow">Mã có Banker &gt; 0</span><span class="v">${f1(G.breadth)}%</span><span class="small ${cls(G.breadth-G.breadth5)}">${sgn(G.breadth-G.breadth5,f1)} điểm trong 5 phiên</span><span class="check">${ok(G.breadth>=50)} Tấn công cần ≥ 50%</span></div>
+ <div><span class="eyebrow">Mã trên MA20</span><span class="v">${f1(G.above20)}%</span><span class="small muted">${D.lists.out.length} mã có dòng tiền rút ra</span><span class="check">${ok(G.above20>=60)} Tấn công cần ≥ 60%</span></div>`;
+if(!G.has_index)$("hIdx").textContent="Chỉ số tổng hợp (không tải được VN-Index)";
+
+/* sparkline */
+function spark(sym,w=60){const h=22,vals=S[sym].banker.slice(-20),bw=w/20;let s=`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true">`;
+  vals.forEach((v,i)=>{v=v||0;const bh=Math.max(v/20*h,v>0?1.5:0);s+=`<rect x="${(i*bw+0.4).toFixed(1)}" y="${(h-bh).toFixed(1)}" width="${(bw-1).toFixed(1)}" height="${bh.toFixed(1)}" rx="1" fill="${i===vals.length-1?"var(--banker)":v>=10?"var(--heat-3)":"var(--heat-2)"}"></rect>`});
+  return s+`<line x1="0" x2="${w}" y1="${h-.5}" y2="${h-.5}" stroke="var(--line)"></line></svg>`}
+const priceCell=x=>`<td>${price(x.price)}<small class="chg ${cls(x.chg)}">${sgn(x.chg)}%</small></td>`;
+const hotTag=x=>x.ext>10?' <span class="tag hotx" title="Giá cao hơn MA20 trên 10%">Tăng nóng</span>':'';
+
+/* top5 */
+const T5=D.lists.top5;
+if(G.state==="defense"){$("top5Note").hidden=false;$("top5Note").textContent="Thị trường đang ở trạng thái Phòng thủ: không gợi ý mua mới. Danh sách dưới đây chỉ để tham khảo.";$("top5").style.opacity=.55}
+const PN={mcdx:["MCDX",30],rs:["RS",25],sector:["Ngành",15],volume:["Khối lượng",15],base:["Nền giá",15]};
+$("top5").innerHTML=T5.length?T5.map(x=>`<button class="pick" type="button" data-sym="${x.sym}">
+  <div class="pick-top"><span class="s">${x.sym}</span><span class="sc">${f0(x.total)}</span></div>
+  <div class="small faint" style="margin-top:-8px">${NAME[x.basket]} · ${x.sector}</div>
+  <div class="flags">${x.new_in?'<span class="tag">Banker mới vào</span>':x.cross?'<span class="tag cross">Cắt lên MA10</span>':''}${x.streak>=5?`<span class="tag good">Duy trì ${x.streak} phiên</span>`:''}${hotTag(x)}</div>
+  <div class="parts">${Object.entries(PN).map(([k,[n,m]])=>`<span>${n}</span><span class="bar"><i style="width:${100*x.parts[k]/m}%"></i></span><span class="n">${f0(x.parts[k])}/${m}</span>`).join("")}</div>
+  <div class="plan"><span>Giá</span><b>${price(x.price)}</b><span>Cắt lỗ</span><b class="down">${price(x.stop)}</b><span>Mục tiêu</span><b class="up">${price(x.target)}</b><span>Lãi/Rủi ro</span><b>${x.rr==null?"–":f1(x.rr)}</b></div>
+ </button>`).join(""):`<p class="empty">Hôm nay không có mã nào thuộc 3 danh sách.</p>`;
+
+/* new lists */
+function renderNew(b,tb,cnt){const list=D.lists.new[b]||[];$(cnt).textContent=`${list.length}/${D.universe_size[b]} mã đạt điều kiện`;
+  $(tb).innerHTML=list.slice(0,10).map((s,i)=>{const x=R[s];return `<tr class="click" tabindex="0" data-sym="${s}">
+   <td class="l rank">${i+1}</td>
+   <td class="l sym">${s} ${x.new_in?'<span class="tag" title="Banker từ 0 lên trong 5 phiên">Mới</span>':'<span class="tag cross" title="Banker cắt lên MA10 hôm nay">MA10</span>'}<small>${x.sector}</small></td>
+   <td><div class="score">${f0(x.score)}<span class="bar"><i style="width:${x.score}%"></i></span></div></td>
+   ${priceCell(x)}<td>${f1(x.b)}</td><td class="${cls(x.d5)}">${sgn(x.d5,f1)}</td><td>${f2(x.vr)}×</td><td>${f0(x.rs)}</td>
+   <td class="${cls(x.f5)}">${sgn(x.f5,f1)}</td><td class="l">${spark(s)}</td></tr>`}).join("")||`<tr><td colspan="10" class="empty">Hôm nay không có mã đạt điều kiện.</td></tr>`}
+renderNew("VN30","tVN30","cVN30");renderNew("MID","tMID","cMID");
+
+/* sustain */
+$("cSus").textContent=`${D.lists.sustain.length} mã đạt điều kiện · xếp theo số phiên × Banker trung bình`;
+$("tSus").innerHTML=D.lists.sustain.slice(0,10).map((s,i)=>{const x=R[s];return `<tr class="click" tabindex="0" data-sym="${s}">
+  <td class="l rank">${i+1}</td><td class="l sym">${s}${hotTag(x)}<small>${x.sector}</small></td>
+  <td class="l"><span class="chip" style="padding:1px 8px">${NAME[x.basket]}</span></td>
+  <td><b>${x.streak}</b> phiên</td><td>${f1(x.streak_avg)}</td><td>${f1(x.b)}</td>${priceCell(x)}
+  <td class="${cls(x.streak_gain)}">${sgn(x.streak_gain,f1)}%</td><td>${sgn(x.ext,f1)}%</td><td>${f0(x.rs)}</td>
+  <td class="${cls(x.f5)}">${sgn(x.f5,f1)}</td><td class="l">${spark(s,120)}</td></tr>`}).join("")||`<tr><td colspan="12" class="empty">Chưa có mã duy trì đủ 5 phiên.</td></tr>`;
+
+/* exits */
+const SN={exit:"Thoát",watch:"Theo dõi",hold:"Giữ",unknown:"Không có dữ liệu"};
+$("tExit").innerHTML=D.exits.length?D.exits.map(e=>`<tr ${R[e.sym]?`class="click" tabindex="0" data-sym="${e.sym}"`:""}>
+  <td class="l sym">${e.sym}</td><td class="l"><span class="status s-${e.status}"><i></i>${SN[e.status]}</span></td>
+  <td>${price(e.price)}</td><td>${f1(e.b)}</td><td>${f1(e.ma)}</td><td>${price(e.stop)}</td><td class="l" style="font-family:var(--f-body);white-space:normal;min-width:160px">${e.reason}</td></tr>`).join("")
+  :`<tr><td colspan="7" class="empty">Chưa có mã nào. Thêm mã đang giữ vào file config/holdings.txt (mỗi dòng 1 mã) để nhận cảnh báo.</td></tr>`;
+
+/* sectors */
+$("leaders").innerHTML=D.leaders.map((l,i)=>`<span class="chip">#${i+1} <b>${l.sector}</b> <span class="num ${cls(l.d5)}">${sgn(l.d5,f0)} mã</span></span>`).join("");
+(function(){const ds=D.sectors.dates,host=$("heat");host.style.gridTemplateColumns=`minmax(110px,auto) repeat(${ds.length},minmax(28px,1fr))`;
+  let h=`<div></div>`+ds.map(d=>`<div class="ch">${fmtD(d)}</div>`).join("");
+  for(const r of D.sectors.rows){h+=`<div class="rl">${r.sector}</div>`+r.vals.map((v,j)=>`<div class="c" style="background:${heat(v)}" title="${r.sector} · ${fmtD(ds[j])} · Banker TB ${f1(v)}">${v>=1?Math.round(v):""}</div>`).join("")}
+  host.innerHTML=h})();
+
+/* line charts */
+function lineChart(host,dates,series,opt){
+  host.innerHTML="";const W=560,H=opt.h||150,m={l:44,r:12,t:10,b:22},n=dates.length;
+  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,width:"100%",role:"img","aria-label":opt.label},host);
+  const all=series.flatMap(s=>s.vals).filter(v=>v!=null),lo=Math.min(...all),hi=Math.max(...all),pad=(hi-lo)*.08||1;
+  const y0=opt.min??lo-pad,y1=opt.max??hi+pad,X=i=>m.l+i*(W-m.l-m.r)/(n-1),Y=v=>m.t+(1-(v-y0)/(y1-y0))*(H-m.t-m.b);
+  for(const t of niceTicks(y0,y1,4)){el("line",{x1:m.l,x2:W-m.r,y1:Y(t),y2:Y(t),stroke:"var(--line)"},svg);el("text",{x:m.l-6,y:Y(t)+3,"text-anchor":"end"},svg).textContent=opt.tick?opt.tick(t):f0(t)}
+  [0,Math.floor(n/2),n-1].forEach(i=>el("text",{x:X(i),y:H-6,"text-anchor":i===0?"start":i===n-1?"end":"middle"},svg).textContent=fmtD(dates[i]));
+  const dots=[];
+  for(const sr of series){const d=sr.vals.map((v,i)=>(i?"L":"M")+X(i).toFixed(1)+" "+Y(v??y0).toFixed(1)).join("");
+    if(series.length===1)el("path",{d:d+`L${X(n-1)} ${H-m.b}L${X(0)} ${H-m.b}Z`,fill:sr.color,"fill-opacity":.08},svg);
+    el("path",{d,fill:"none",stroke:sr.color,"stroke-width":2,"stroke-linejoin":"round"},svg);
+    el("circle",{cx:X(n-1),cy:Y(sr.vals.at(-1)),r:4,fill:sr.color,stroke:"var(--surface)","stroke-width":2},svg);
+    dots.push(el("circle",{r:4,fill:sr.color,stroke:"var(--surface)","stroke-width":2,visibility:"hidden"},svg))}
+  const cross=el("line",{y1:m.t,y2:H-m.b,stroke:"var(--ink-3)","stroke-dasharray":"3 3",visibility:"hidden"},svg);
+  const tip=document.createElement("div");tip.className="tip";tip.hidden=true;host.appendChild(tip);
+  const hit=el("rect",{x:m.l,y:m.t,width:W-m.l-m.r,height:H-m.t-m.b,fill:"transparent"},svg);
+  hit.addEventListener("pointermove",e=>{const r=svg.getBoundingClientRect(),p=(e.clientX-r.left)/r.width*W,i=Math.max(0,Math.min(n-1,Math.round((p-m.l)/(W-m.l-m.r)*(n-1))));
+    cross.setAttribute("x1",X(i));cross.setAttribute("x2",X(i));cross.setAttribute("visibility","visible");
+    series.forEach((sr,j)=>{dots[j].setAttribute("cx",X(i));dots[j].setAttribute("cy",Y(sr.vals[i]));dots[j].setAttribute("visibility","visible")});
+    tip.innerHTML=`<div class="t">${fullD(dates[i])}</div>`+series.map(sr=>`<div class="r"><span>${sr.name}</span><b>${opt.fmt(sr.vals[i])}</b></div>`).join("");tip.hidden=false;
+    const left=X(i)/W*r.width;tip.style.left=Math.min(left+12,r.width-180)+"px";tip.style.top="4px"});
+  hit.addEventListener("pointerleave",()=>{tip.hidden=true;cross.setAttribute("visibility","hidden");dots.forEach(d=>d.setAttribute("visibility","hidden"))});
+}
+lineChart($("breadth"),DATES,[{name:"VN30",color:"var(--accent)",vals:D.series.breadth.VN30},{name:"VNMidcap",color:"var(--mid)",vals:D.series.breadth.MID}],{label:"Phần trăm mã có Banker lớn hơn 0, VN30 và VNMidcap, 60 phiên",fmt:v=>f1(v)+"%",tick:v=>Math.round(v)+"%",min:0,max:100,h:140});
+lineChart($("vnindex"),DATES,[{name:G.has_index?"VN-Index":"Chỉ số tổng hợp",color:"var(--ink-2)",vals:D.series.index}],{label:"VN-Index 60 phiên",fmt:v=>f2(v),h:120});
+
+/* perf */
+$("tPerf").innerHTML=D.perf.flatMap(p=>[5,10,20].map((h,j)=>`<tr>${j===0?`<td class="l" rowspan="3" style="font-family:var(--f-body);white-space:normal;vertical-align:top">${p.name}</td>`:""}
+  <td>${h} phiên</td><td>${f0(p["n"+h])}</td><td>${p["win"+h]==null?"–":f1(p["win"+h])+"%"}</td><td class="${cls(p["ret"+h])}">${p["ret"+h]==null?"–":sgn(p["ret"+h])+"%"}</td><td class="${cls(p.idx[h])}">${sgn(p.idx[h])}%</td></tr>`)).join("");
+
+$("foot").innerHTML=`Giá hiển thị theo nghìn đồng. MCDX: Banker = 1,5 × (RSI50 − 50), Hot Money = 0,7 × (RSI40 − 30), giới hạn 0–20. Đèn thị trường: Tấn công khi VN-Index trên MA50 và MA200, ≥ 50% mã có Banker &gt; 0 và ≥ 60% mã trên MA20; Phòng thủ khi VN-Index dưới MA200 hoặc dưới 25% mã có Banker &gt; 0. Công cụ sàng lọc theo quy tắc cố định, không phải khuyến nghị đầu tư.${D.demo?" Toàn bộ số liệu trên trang là giả lập.":""}`;
+
+/* detail */
+function mcdxChart(host,sym){
+  const st=S[sym];host.innerHTML="";const n=st.close.length,W=760,H1=190,H2=150,gap=26,m={l:48,r:12,t:10,b:22},H=H1+gap+H2+m.b+m.t;
+  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,width:"100%",role:"img","aria-label":`Giá và MCDX ${sym} ${n} phiên`},host);
+  const pw=W-m.l-m.r,bw=pw/n,X=i=>m.l+(i+.5)*bw;
+  const pr=st.close.map(v=>v>=500?v/1000:v),lo=Math.min(...pr.filter(v=>v!=null)),hi=Math.max(...pr.filter(v=>v!=null)),pd=(hi-lo)*.08||1;
+  const Yp=v=>m.t+(1-(v-(lo-pd))/((hi+pd)-(lo-pd)))*H1;
+  for(const t of niceTicks(lo-pd,hi+pd,4)){el("line",{x1:m.l,x2:W-m.r,y1:Yp(t),y2:Yp(t),stroke:"var(--line)"},svg);el("text",{x:m.l-6,y:Yp(t)+3,"text-anchor":"end"},svg).textContent=f1(t)}
+  const top2=m.t+H1+gap,Ym=v=>top2+(1-(v||0)/20)*H2;
+  for(const t of [0,5,10,15,20]){el("line",{x1:m.l,x2:W-m.r,y1:Ym(t),y2:Ym(t),stroke:"var(--line)"},svg);el("text",{x:m.l-6,y:Ym(t)+3,"text-anchor":"end"},svg).textContent=t}
+  el("text",{x:m.l,y:top2-8,"font-weight":"600"},svg).textContent="MCDX";
+  el("rect",{x:m.l+(n-5)*bw,y:m.t,width:5*bw,height:Ym(0)-m.t,fill:"var(--accent)","fill-opacity":.06},svg);
+  for(let i=0;i<n;i++){const x0=m.l+i*bw+.6,w=Math.max(bw-1.2,1);
+    el("rect",{x:x0,y:Ym(20),width:w,height:Ym(0)-Ym(20),fill:"var(--retail)","fill-opacity":.55},svg);
+    el("rect",{x:x0,y:Ym(st.hot[i]),width:w,height:Ym(0)-Ym(st.hot[i]),fill:"var(--hot)"},svg);
+    if(st.banker[i]>0)el("rect",{x:x0,y:Ym(st.banker[i]),width:w,height:Ym(0)-Ym(st.banker[i]),fill:"var(--banker)"},svg)}
+  el("path",{d:st.bma.map((v,i)=>(i?"L":"M")+X(i).toFixed(1)+" "+Ym(v).toFixed(1)).join(""),fill:"none",stroke:"var(--ink)","stroke-width":1.5},svg);
+  el("path",{d:pr.map((v,i)=>(i?"L":"M")+X(i).toFixed(1)+" "+Yp(v).toFixed(1)).join(""),fill:"none",stroke:"var(--ink)","stroke-width":2,"stroke-linejoin":"round"},svg);
+  const x=R[sym];if(x&&x.stop){const ys=Yp(x.stop/(x.stop>=500?1000:1));if(ys>m.t&&ys<m.t+H1){el("line",{x1:m.l,x2:W-m.r,y1:ys,y2:ys,stroke:"var(--bad)","stroke-dasharray":"2 4"},svg);el("text",{x:W-m.r,y:ys-4,"text-anchor":"end",style:"fill:var(--bad)"},svg).textContent="Cắt lỗ "+price(x.stop)}}
+  let sig=-1;for(let i=n-1;i>0;i--){if(st.banker[i]>.5&&!(st.banker[i-1]>.5)){sig=i;break}}
+  if(sig>=0){el("line",{x1:X(sig),x2:X(sig),y1:m.t,y2:Ym(0),stroke:"var(--accent)","stroke-dasharray":"4 4","stroke-width":1.25},svg);
+    el("text",{x:X(sig)+(sig>n-12?-6:6),y:m.t+12,"text-anchor":sig>n-12?"end":"start",style:"fill:var(--accent)"},svg).textContent="Banker vào "+fmtD(DATES[sig])}
+  [0,Math.round(n/3),Math.round(2*n/3),n-1].forEach(i=>el("text",{x:X(i),y:H-6,"text-anchor":i===0?"start":i===n-1?"end":"middle"},svg).textContent=fmtD(DATES[i]));
+  const cross=el("line",{y1:m.t,y2:Ym(0),stroke:"var(--ink-3)","stroke-dasharray":"3 3",visibility:"hidden"},svg);
+  const tip=document.createElement("div");tip.className="tip";tip.hidden=true;host.appendChild(tip);
+  const hit=el("rect",{x:m.l,y:m.t,width:pw,height:Ym(0)-m.t,fill:"transparent"},svg);
+  hit.addEventListener("pointermove",e=>{const r=svg.getBoundingClientRect(),p=(e.clientX-r.left)/r.width*W,i=Math.max(0,Math.min(n-1,Math.floor((p-m.l)/bw)));
+    cross.setAttribute("x1",X(i));cross.setAttribute("x2",X(i));cross.setAttribute("visibility","visible");
+    tip.innerHTML=`<div class="t">${fullD(DATES[i])}</div><div class="r"><span>Giá</span><b>${price(st.close[i])}</b></div><div class="r"><span>Banker</span><b>${f1(st.banker[i])}</b></div><div class="r"><span>Hot Money</span><b>${f1(st.hot[i])}</b></div><div class="r"><span>MA10 Banker</span><b>${f1(st.bma[i])}</b></div>`;
+    tip.hidden=false;const left=X(i)/W*r.width;tip.style.left=(left>r.width/2?left-180:left+12)+"px";tip.style.top="8px"});
+  hit.addEventListener("pointerleave",()=>{tip.hidden=true;cross.setAttribute("visibility","hidden")});
+}
+let lastFocus=null;
+function openDetail(sym){
+  const st=S[sym],x=R[sym];if(!st)return;lastFocus=document.activeElement;const n=st.close.length;
+  const rows=[];for(let k=n-1;k>=Math.max(1,n-5);k--)rows.push({d:DATES[k],p:st.close[k],c:(st.close[k]/st.close[k-1]-1)*100,v:st.volume[k],vr:st.vma20[k]?st.volume[k]/st.vma20[k]:null,b:st.banker[k],db:(st.banker[k]||0)-(st.banker[k-1]||0),h:st.hot[k],f:st.fnet[k]});
+  const fmax=Math.max(...rows.map(r=>Math.abs(r.f||0)),.01);
+  const tags=[];
+  if(x.new_in)tags.push('<span class="tag">Banker vào mới</span>');
+  if(x.cross)tags.push('<span class="tag cross">Cắt lên MA10</span>');
+  if(x.streak>=5)tags.push(`<span class="tag good">Banker ≥ 10: ${x.streak} phiên</span>`);
+  if(x.ext>10)tags.push('<span class="tag hotx">Tăng nóng</span>');
+  tags.push(`<span class="chip">RS <b class="num">${f0(x.rs)}</b></span>`,`<span class="chip">Ngoại 5 phiên <b class="num ${cls(x.f5)}">${sgn(x.f5,f1)} tỷ</b></span>`,`<span class="chip">GTGD TB20 <b class="num">${f1(x.value20)} tỷ</b></span>`,`<span class="chip">Cắt lỗ gợi ý <b class="num">${price(x.stop)}</b></span>`,`<span class="chip">Mục tiêu <b class="num">${price(x.target)}</b></span>`);
+  $("sheet").innerHTML=`
+   <div class="sheet-head"><div><div class="eyebrow">${NAME[x.basket]} · ${x.sector}</div><h2 id="dTitle" style="font-size:22px">${sym}</h2>
+     <div class="big ${cls(x.chg)}">${price(x.price)} <span style="font-size:15px">${sgn(x.chg)}%</span></div></div>
+     <button class="btn" id="closeBtn" type="button">Đóng</button></div>
+   <div class="verdict">${tags.join("")}</div>
+   <section class="panel"><div class="panel-head"><h3>Giá và MCDX, ${n} phiên</h3>
+     <div class="legend"><span><i style="background:var(--banker)"></i>Banker</span><span><i style="background:var(--hot)"></i>Hot Money</span><span><i style="background:var(--retail)"></i>Retailer</span><span><i class="line" style="background:var(--ink)"></i>MA10 Banker</span></div></div>
+     <div class="chart" id="dChart"></div><p class="note">Vùng tô nhạt là 5 phiên gần nhất. Đường nét đứt xanh đánh dấu phiên Banker bắt đầu xuất hiện; đường đỏ là mức cắt lỗ gợi ý.</p></section>
+   <section class="panel"><h3>Biến động 5 phiên gần nhất</h3><div class="tbl-wrap"><table>
+     <thead><tr><th class="l">Ngày</th><th>Giá</th><th>%</th><th>KL (nghìn cp)</th><th>KL/TB20</th><th>Banker</th><th>Δ Banker</th><th>Hot Money</th><th>Khối ngoại ròng (tỷ)</th></tr></thead>
+     <tbody>${rows.map(r=>`<tr><td class="l">${fullD(r.d)}</td><td>${price(r.p)}</td><td class="${cls(r.c)}">${sgn(r.c)}%</td><td>${f0(r.v/1000)}</td><td>${r.vr==null?"–":f2(r.vr)+"×"}</td><td><b>${f1(r.b)}</b></td><td class="${cls(r.db)}">${sgn(r.db,f1)}</td><td>${f1(r.h)}</td>
+       <td>${r.f==null?"–":`<div class="fnet"><span class="${cls(r.f)}">${sgn(r.f)}</span><span class="b"><i style="${r.f>=0?`left:50%;width:${50*r.f/fmax}%;background:var(--good)`:`right:50%;width:${50*-r.f/fmax}%;background:var(--bad)`}"></i></span></div>`}</td></tr>`).join("")}</tbody></table></div></section>`;
+  $("overlay").hidden=false;mcdxChart($("dChart"),sym);$("closeBtn").focus();$("closeBtn").onclick=closeDetail;
+}
+function closeDetail(){$("overlay").hidden=true;if(lastFocus)lastFocus.focus()}
+$("overlay").addEventListener("click",e=>{if(e.target.id==="overlay")closeDetail()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("overlay").hidden)closeDetail()});
+document.querySelectorAll("[data-sym]").forEach(nd=>{nd.addEventListener("click",()=>openDetail(nd.dataset.sym));
+  if(nd.tagName==="TR")nd.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openDetail(nd.dataset.sym)}})});
+})();
+</script>
+</body>
+</html>

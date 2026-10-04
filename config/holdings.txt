@@ -1,0 +1,4 @@
+# Danh sách mã anh đang nắm giữ, mỗi dòng 1 mã. Dùng cho cảnh báo thoát.
+# Ví dụ:
+# FPT
+# HPG

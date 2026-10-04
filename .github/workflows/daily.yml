@@ -1,0 +1,87 @@
+name: Cập nhật dashboard MCDX
+
+on:
+  schedule:
+    # Giờ GitHub là UTC. 10:05 UTC = 17:05 giờ Việt Nam. Hai lịch sau để thử lại nếu dữ liệu SSI chưa có.
+    - cron: "5 10 * * 1-5"
+    - cron: "35 10 * * 1-5"
+    - cron: "5 11 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      demo:
+        description: "Chạy bằng dữ liệu giả lập (không cần key SSI)"
+        type: boolean
+        default: false
+      force:
+        description: "Chạy lại dù hôm nay đã chạy xong"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: mcdx-daily
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    outputs:
+      skip: ${{ steps.run.outputs.skip }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Cài thư viện
+        run: pip install -r requirements.txt
+
+      - name: Lấy dữ liệu SSI, tính MCDX, tạo dashboard
+        id: run
+        env:
+          SSI_CONSUMER_ID: ${{ secrets.SSI_CONSUMER_ID }}
+          SSI_CONSUMER_SECRET: ${{ secrets.SSI_CONSUMER_SECRET }}
+        run: |
+          ARGS=""
+          if [ "${{ inputs.demo }}" = "true" ]; then ARGS="--demo"; fi
+          if [ "${{ inputs.force }}" = "true" ]; then ARGS="$ARGS --force"; fi
+          python -m mcdx.run $ARGS
+
+      - name: Lưu dữ liệu vào repo
+        if: steps.run.outputs.skip != 'true' && inputs.demo != true
+        run: |
+          git config user.name "mcdx-bot"
+          git config user.email "mcdx-bot@users.noreply.github.com"
+          git add data
+          if git diff --cached --quiet; then
+            echo "Không có dữ liệu mới."
+          else
+            git commit -m "Dữ liệu phiên $(TZ=Asia/Ho_Chi_Minh date +%d/%m/%Y)"
+            git push
+          fi
+
+      - uses: actions/configure-pages@v5
+        if: steps.run.outputs.skip != 'true'
+
+      - uses: actions/upload-pages-artifact@v3
+        if: steps.run.outputs.skip != 'true'
+        with:
+          path: site
+
+  deploy:
+    needs: update
+    if: needs.update.outputs.skip != 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
