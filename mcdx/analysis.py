@@ -203,8 +203,16 @@ def compute(prices: pd.DataFrame, universe: dict[str, list[str]], sectors: dict[
             reasons.append("Banker cắt xuống MA10")
         if r.price < r.stop:
             reasons.append("Giá thủng mức cắt lỗ gợi ý")
-        status = "exit" if reasons else ("watch" if r.b < r.ma else "hold")
-        exits.append({"sym": s, "status": status, "reason": "; ".join(reasons) or ("Banker dưới MA10" if status == "watch" else "Banker còn trên MA10"),
+        if reasons:
+            status, why = "exit", "; ".join(reasons)
+        elif r.b <= 0.5:
+            status = "watch"
+            why = "Không có dòng tiền lớn (Banker = 0)" + ("" if r.above_ma20 else f"; giá dưới MA20 {abs(r.ext):.1f}%".replace(".", ","))
+        elif r.b < r.ma:
+            status, why = "watch", "Banker dưới MA10"
+        else:
+            status, why = "hold", "Banker > 0 và trên MA10"
+        exits.append({"sym": s, "status": status, "reason": why,
                       "b": r.b, "ma": r.ma, "price": r.price, "stop": r.stop})
 
     # ---- ngành dẫn dắt
