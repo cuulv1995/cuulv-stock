@@ -67,6 +67,9 @@ Các lưu ý khác:
 - Lịch chạy của GitHub có thể trễ 5–30 phút so với giờ hẹn.
 - Với repo Public, GitHub tự tắt lịch chạy nếu repo không có hoạt động trong 60 ngày. Tool commit dữ liệu mỗi ngày nên thường không bị tắt. Nếu bị tắt, vào tab **Actions** và bấm **Enable workflow**.
 
+## Tiêu chí chọn cổ phiếu
+Xem [docs/tieu-chi-co-phieu-tot.md](docs/tieu-chi-co-phieu-tot.md): 10 tiêu chí cơ bản (tăng trưởng, hiệu quả, sức khỏe tài chính, định giá) và 10 tiêu chí thời điểm mà dashboard đã tính.
+
 ## Cấu trúc
 ```
 .github/workflows/daily.yml   lịch chạy + đăng GitHub Pages
@@ -75,6 +78,7 @@ mcdx/analysis.py              MCDX, danh sách, đèn thị trường, Top 5, c�
 mcdx/run.py                   chương trình chính
 template/dashboard.html       giao diện dashboard
 config/                       mã đang giữ, ngành, rổ dự phòng
+docs/                         tiêu chí chọn cổ phiếu
 data/                         dữ liệu tự cập nhật (đừng sửa tay)
 tests/test_pipeline.py        chạy thử với SSI giả lập
 ```
