@@ -74,4 +74,6 @@ def load_holdings() -> list[str]:
 
 
 def load_sectors() -> dict[str, str]:
-    return read_json(CONFIG / "sectors.json", {})
+    """Ngành do người dùng đặt (config/sectors.json) ưu tiên hơn ngành tự động từ nguồn dữ liệu."""
+    auto = read_json(DATA / "sectors_auto.json", {})
+    return {**auto, **read_json(CONFIG / "sectors.json", {})}

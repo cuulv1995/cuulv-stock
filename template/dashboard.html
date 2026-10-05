@@ -11,7 +11,7 @@
 /* Layout: đèn thị trường → Top 5 → danh sách theo rổ → duy trì → theo dõi → bối cảnh → kiểm chứng; bấm mã mở chi tiết */
 :root{
   --bg:#f5f6f4; --surface:#ffffff; --surface-2:#eef0ec; --line:#dcdfd8; --ink:#1b2420; --ink-2:#55605a; --ink-3:#86908a;
-  --accent:#1f5f8b; --accent-soft:#e3edf4; --mid:#8a4fb0;
+  --accent:#1f5f8b; --accent-soft:#e3edf4; --mid:#8a4fb0; --small:#c07a1a;
   --banker:#c8312b; --hot:#e0a21a; --retail:#79b07a; --banker-soft:#f6dedc;
   --good:#1f8a4c; --bad:#c8312b; --warn:#b7791f; --good-soft:#dff1e6; --bad-soft:#f8e1df; --warn-soft:#fbefd9;
   --heat-0:#f1efe9; --heat-1:#f6d4cf; --heat-2:#eba59c; --heat-3:#dc6c61; --heat-4:#b8302a;
@@ -22,14 +22,14 @@
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#121614; --surface:#1a201d; --surface-2:#222a26; --line:#2f3833; --ink:#e7ece9; --ink-2:#a9b3ad; --ink-3:#7c8781;
-  --accent:#6fb0dc; --accent-soft:#1d3342; --mid:#c39be0;
+  --accent:#6fb0dc; --accent-soft:#1d3342; --mid:#c39be0; --small:#e3a54d;
   --banker:#ec5a50; --hot:#f0b93a; --retail:#6fa872; --banker-soft:#3a2321;
   --good:#4cc07a; --bad:#ef6a5f; --warn:#e8b04f; --good-soft:#1c3326; --bad-soft:#3a2321; --warn-soft:#3a3020;
   --heat-0:#232a26; --heat-1:#47302c; --heat-2:#7a3a33; --heat-3:#b2463c; --heat-4:#e2584c;
   --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark; } }
 :root[data-theme="dark"]{
   --bg:#121614; --surface:#1a201d; --surface-2:#222a26; --line:#2f3833; --ink:#e7ece9; --ink-2:#a9b3ad; --ink-3:#7c8781;
-  --accent:#6fb0dc; --accent-soft:#1d3342; --mid:#c39be0;
+  --accent:#6fb0dc; --accent-soft:#1d3342; --mid:#c39be0; --small:#e3a54d;
   --banker:#ec5a50; --hot:#f0b93a; --retail:#6fa872; --banker-soft:#3a2321;
   --good:#4cc07a; --bad:#ef6a5f; --warn:#e8b04f; --good-soft:#1c3326; --bad-soft:#3a2321; --warn-soft:#3a3020;
   --heat-0:#232a26; --heat-1:#47302c; --heat-2:#7a3a33; --heat-3:#b2463c; --heat-4:#e2584c;
@@ -174,7 +174,7 @@ footer{font-size:12px;color:var(--ink-3);line-height:1.6;max-width:80ch}
 <div class="wrap">
   <header class="top">
     <div>
-      <div class="eyebrow">Sàng lọc sau phiên · HOSE · VN30 và VNMidcap</div>
+      <div class="eyebrow">Sàng lọc sau phiên · HOSE · VN30, VNMidCap và VNSmallCap</div>
       <h1>Bảng dòng tiền MCDX</h1>
     </div>
     <div class="session" id="session"></div>
@@ -195,10 +195,14 @@ footer{font-size:12px;color:var(--ink-3);line-height:1.6;max-width:80ch}
       <div class="tbl-wrap"><table><thead><tr><th class="l">#</th><th class="l">Mã</th><th>Điểm</th><th>Giá · %</th><th>Banker</th><th>Δ 5p</th><th>KL/TB20</th><th>RS</th><th>Ngoại 5p</th><th class="l">20 phiên</th></tr></thead><tbody id="tVN30"></tbody></table></div>
     </section>
     <section class="panel" aria-labelledby="hMID">
-      <div class="panel-head"><h2 id="hMID">Top 10 VNMidcap · dòng tiền mới vào</h2><span class="faint small" id="cMID"></span></div>
+      <div class="panel-head"><h2 id="hMID">Top 10 VNMidCap · dòng tiền mới vào</h2><span class="faint small" id="cMID"></span></div>
       <div class="tbl-wrap"><table><thead><tr><th class="l">#</th><th class="l">Mã</th><th>Điểm</th><th>Giá · %</th><th>Banker</th><th>Δ 5p</th><th>KL/TB20</th><th>RS</th><th>Ngoại 5p</th><th class="l">20 phiên</th></tr></thead><tbody id="tMID"></tbody></table></div>
     </section>
   </div>
+  <section class="panel" aria-labelledby="hSMALL" id="pSMALL">
+    <div class="panel-head"><h2 id="hSMALL">Top 10 VNSmallCap · dòng tiền mới vào</h2><span class="faint small" id="cSMALL"></span></div>
+    <div class="tbl-wrap"><table><thead><tr><th class="l">#</th><th class="l">Mã</th><th>Điểm</th><th>Giá · %</th><th>Banker</th><th>Δ 5p</th><th>KL/TB20</th><th>RS</th><th>Ngoại 5p</th><th class="l">20 phiên</th></tr></thead><tbody id="tSMALL"></tbody></table></div>
+  </section>
   <p class="note" style="margin-top:-8px">Dòng tiền mới vào: Banker từ 0 lên trên 0 trong 5 phiên (nhãn "Mới") hoặc cắt lên MA10 hôm nay (nhãn "MA10"); GTGD TB20 ≥ 5 tỷ. Điểm = 60 × ΔBanker5/20 + 25 × min(KL/TB20, 3)/3 + 15 nếu khối ngoại mua ròng 5 phiên. Khối ngoại tính bằng tỷ đồng. RS 1–99 là xếp hạng sức mạnh giá trong rổ.</p>
 
   <section class="panel" aria-labelledby="hSus">
@@ -224,7 +228,7 @@ footer{font-size:12px;color:var(--ink-3);line-height:1.6;max-width:80ch}
   <div class="grid-2">
     <section class="panel" aria-labelledby="hBr">
       <div class="panel-head"><h2 id="hBr">Độ rộng dòng tiền lớn</h2><span class="faint small">% mã có Banker &gt; 0, 60 phiên</span></div>
-      <div class="legend"><span><i class="line" style="background:var(--accent)"></i>VN30</span><span><i class="line" style="background:var(--mid)"></i>VNMidcap</span></div>
+      <div class="legend"><span><i class="line" style="background:var(--accent)"></i>VN30</span><span><i class="line" style="background:var(--mid)"></i>VNMidCap</span><span id="lgSmall"><i class="line" style="background:var(--small)"></i>VNSmallCap</span></div>
       <div class="chart" id="breadth"></div>
       <h3 id="hIdx">VN-Index</h3>
       <div class="chart" id="vnindex"></div>
@@ -269,7 +273,7 @@ footer{font-size:12px;color:var(--ink-3);line-height:1.6;max-width:80ch}
 (function(){
 const D=JSON.parse(document.getElementById("data").textContent);
 const $=id=>document.getElementById(id);
-const NAME={VN30:"VN30",MID:"VNMidcap"};
+const NAME={VN30:"VN30",MID:"VNMidCap",SMALL:"VNSmallCap"};
 const nf=(v,d)=>v==null||isNaN(v)?"–":Number(v).toLocaleString("vi-VN",{minimumFractionDigits:d,maximumFractionDigits:d});
 const f0=v=>nf(v,0),f1=v=>nf(v,1),f2=v=>nf(v,2);
 const sgn=(v,f=f2)=>v==null||isNaN(v)?"–":(v>0?"+":"")+f(v);
@@ -310,6 +314,7 @@ $("regime").innerHTML=`
    <span class="check">${ok(G.ma50!=null&&G.index>G.ma50)} Trên MA50 <span class="faint">${f0(G.ma50)}</span></span><span class="check">${ok(G.ma200==null||G.index>G.ma200)} Trên MA200 <span class="faint">${G.ma200==null?"chưa đủ":f0(G.ma200)}</span></span></div>
  <div><span class="eyebrow">Mã có Banker &gt; 0</span><span class="v">${f1(G.breadth)}%</span><span class="small ${cls(G.breadth-G.breadth5)}">${sgn(G.breadth-G.breadth5,f1)} điểm trong 5 phiên</span><span class="check">${ok(G.breadth>=50)} Tấn công cần ≥ 50%</span></div>
  <div><span class="eyebrow">Mã trên MA20</span><span class="v">${f1(G.above20)}%</span><span class="small muted">${D.lists.out.length} mã có dòng tiền rút ra</span><span class="check">${ok(G.above20>=60)} Tấn công cần ≥ 60%</span></div>`;
+if(!D.series.breadth.SMALL)$("lgSmall").hidden=true;
 if(!G.has_index)$("hIdx").textContent="Chỉ số tổng hợp (không tải được VN-Index)";
 
 /* sparkline */
@@ -341,6 +346,7 @@ function renderNew(b,tb,cnt){const list=D.lists.new[b]||[];$(cnt).textContent=`$
    ${priceCell(x)}<td>${f1(x.b)}</td><td class="${cls(x.d5)}">${sgn(x.d5,f1)}</td><td>${f2(x.vr)}×</td><td>${f0(x.rs)}</td>
    <td class="${cls(x.f5)}">${sgn(x.f5,f1)}</td><td class="l">${spark(s)}</td></tr>`}).join("")||`<tr><td colspan="10" class="empty">Hôm nay không có mã đạt điều kiện.</td></tr>`}
 renderNew("VN30","tVN30","cVN30");renderNew("MID","tMID","cMID");
+if(D.lists.new.SMALL){renderNew("SMALL","tSMALL","cSMALL")}else{$("pSMALL").hidden=true}
 
 /* sustain */
 $("susMin").textContent=SUS;
@@ -393,7 +399,7 @@ function lineChart(host,dates,series,opt){
     const left=X(i)/W*r.width;tip.style.left=Math.min(left+12,r.width-180)+"px";tip.style.top="4px"});
   hit.addEventListener("pointerleave",()=>{tip.hidden=true;cross.setAttribute("visibility","hidden");dots.forEach(d=>d.setAttribute("visibility","hidden"))});
 }
-lineChart($("breadth"),DATES,[{name:"VN30",color:"var(--accent)",vals:D.series.breadth.VN30},{name:"VNMidcap",color:"var(--mid)",vals:D.series.breadth.MID}],{label:"Phần trăm mã có Banker lớn hơn 0, VN30 và VNMidcap, 60 phiên",fmt:v=>f1(v)+"%",tick:v=>Math.round(v)+"%",min:0,max:100,h:140});
+lineChart($("breadth"),DATES,[{name:"VN30",color:"var(--accent)",vals:D.series.breadth.VN30},{name:"VNMidCap",color:"var(--mid)",vals:D.series.breadth.MID}].concat(D.series.breadth.SMALL?[{name:"VNSmallCap",color:"var(--small)",vals:D.series.breadth.SMALL}]:[]),{label:"Phần trăm mã có Banker lớn hơn 0, VN30 và VNMidcap, 60 phiên",fmt:v=>f1(v)+"%",tick:v=>Math.round(v)+"%",min:0,max:100,h:140});
 lineChart($("vnindex"),DATES,[{name:G.has_index?"VN-Index":"Chỉ số tổng hợp",color:"var(--ink-2)",vals:D.series.index}],{label:"VN-Index 60 phiên",fmt:v=>f2(v),h:120});
 
 /* perf */

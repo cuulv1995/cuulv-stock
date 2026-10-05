@@ -31,41 +31,59 @@ def set_output(key, value):
             f.write(f"{key}={value}\n")
 
 
+BASKETS = ("VN30", "MID", "SMALL")
+BASKET_CODES = {"MID": ("VNMIDCAP", "VNMID", "VNMidcap"), "SMALL": ("VNSMALLCAP", "VNSML", "VNSmallCap")}
+
+
+def _first(client, codes) -> list[str]:
+    for code in codes:
+        try:
+            syms = client.index_components(code)
+        except Exception:
+            syms = []
+        if syms:
+            return syms
+    return []
+
+
 def refresh_universe(client, today: dt.date) -> dict:
     cur = store.read_json(store.UNIVERSE, {})
-    if cur.get("updated") and (today - dt.date.fromisoformat(cur["updated"])).days < 7:
+    fresh = cur.get("updated") and (today - dt.date.fromisoformat(cur["updated"])).days < 7
+    if fresh and all(k in cur for k in BASKETS):
         return cur
     uni = {}
     try:
         vn30 = client.index_components("VN30")
-        mid = []
-        for code in ("VNMIDCAP", "VNMID", "VNMidcap"):
-            try:
-                mid = client.index_components(code)
-            except Exception:
-                mid = []
-            if mid:
-                break
+        mid = _first(client, BASKET_CODES["MID"])
         if not mid:
-            vn100 = client.index_components("VN100")
-            mid = [s for s in vn100 if s not in vn30]
+            mid = [s for s in client.index_components("VN100") if s not in vn30]
+        small = [s for s in _first(client, BASKET_CODES["SMALL"]) if s not in vn30 and s not in mid]
         if len(vn30) >= 25 and len(mid) >= 30:
-            uni = {"VN30": vn30, "MID": mid, "updated": today.isoformat(), "source": getattr(client, "universe_label", "SSI IndexComponents")}
+            uni = {"VN30": vn30, "MID": mid, "SMALL": small, "updated": today.isoformat(),
+                   "source": getattr(client, "universe_label", "SSI IndexComponents")}
     except Exception as e:
-        log.warning("Không lấy được rổ chỉ số từ SSI: %s", e)
+        log.warning("Không lấy được rổ chỉ số: %s", e)
     if not uni:
         if cur.get("VN30"):
+            cur.setdefault("SMALL", [])
             return cur
         d = store.read_json(store.CONFIG / "universe_default.json", {})
-        uni = {"VN30": d["VN30"], "MID": d["MID"], "updated": today.isoformat(), "source": "Danh sách dự phòng (ước lượng)"}
+        uni = {"VN30": d["VN30"], "MID": d["MID"], "SMALL": [], "updated": today.isoformat(),
+               "source": "Danh sách dự phòng (ước lượng)"}
     store.write_json(store.UNIVERSE, uni)
-    log.info("Rổ: VN30 %d mã, VNMidcap %d mã (%s)", len(uni["VN30"]), len(uni["MID"]), uni["source"])
+    log.info("Rổ: VN30 %d, VNMidCap %d, VNSmallCap %d mã (%s)", len(uni["VN30"]), len(uni["MID"]), len(uni["SMALL"]), uni["source"])
+    # Ngành tự động cho mã chưa có trong config/sectors.json
+    if hasattr(client, "sectors"):
+        auto = client.sectors()
+        if auto:
+            store.write_json(store.DATA / "sectors_auto.json", auto)
+            log.info("Ngành tự động: %d mã", len(auto))
     return uni
 
 
 def update_prices(client, uni: dict, today: dt.date, cutoff: dt.date) -> pd.DataFrame:
     df = store.load_prices()
-    symbols = uni["VN30"] + uni["MID"] + [INDEX]
+    symbols = [s for b in BASKETS for s in uni.get(b, [])] + [INDEX]
 
     # 1) Lịch sử cho mã mới / thiếu (DailyOhlc, chỉ chạy lần đầu hoặc khi rổ đổi)
     have = df.groupby("symbol")["date"].agg(["min", "count"]) if len(df) else pd.DataFrame(columns=["min", "count"])
@@ -83,7 +101,9 @@ def update_prices(client, uni: dict, today: dt.date, cutoff: dt.date) -> pd.Data
 
     # 2) Cập nhật 10 ngày gần nhất (kèm khối ngoại). Mã vừa tải lịch sử ở bước 1 không cần tải lại.
     recent = symbols if getattr(client, "bulk_is_cheap", False) else [s for s in symbols if s not in missing]
-    rows = client.daily_bulk(recent, today - dt.timedelta(days=10), today, today=cutoff if cutoff == today else None)
+    last_dates = df.groupby("symbol")["date"].max().to_dict() if len(df) else {}
+    rows = client.daily_bulk(recent, today - dt.timedelta(days=10), today, today=cutoff if cutoff == today else None,
+                             last_dates=last_dates)
     keep = set(symbols)
     # Trước 15:00 dữ liệu hôm nay chưa chốt: bỏ qua để không lưu giá giữa phiên
     df = store.upsert_prices(df, [r for r in rows if r["symbol"] in keep and r["date"] <= cutoff], today)
@@ -153,7 +173,7 @@ def main():
         uni = refresh_universe(client, today)
         cutoff = today if now.hour >= 15 or args.today else today - dt.timedelta(days=1)
         prices = update_prices(client, uni, today, cutoff)
-        uni = {"VN30": uni["VN30"], "MID": uni["MID"]}
+        uni = {b: uni[b] for b in BASKETS if uni.get(b)}
 
     report = compute(prices, uni, store.load_sectors(), store.load_holdings())
     latest = dt.date.fromisoformat(report["date"])

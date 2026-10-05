@@ -171,7 +171,7 @@ class SSIClient:
             })
         return out
 
-    def daily_bulk(self, symbols: list[str], frm: dt.date, to: dt.date, today: dt.date | None = None) -> list[dict]:
+    def daily_bulk(self, symbols: list[str], frm: dt.date, to: dt.date, today: dt.date | None = None, **_) -> list[dict]:
         """Cả sàn HOSE trong 1 lần gọi (kèm khối ngoại) + VN-Index."""
         keep = set(symbols)
         rows = [r for r in self.daily_stock_price(frm, to, market="HOSE") if r["symbol"] in keep]

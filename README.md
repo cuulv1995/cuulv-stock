@@ -3,7 +3,7 @@
 Tool tự chạy mỗi ngày giao dịch lúc **17:05** (giờ Việt Nam) trên GitHub:
 
 1. Lấy dữ liệu từ **SSI FastConnect Data**: rổ VN30 và VNMidcap, giá, khối lượng, khối ngoại.
-2. Tính MCDX và các chỉ số: đèn thị trường, Top 5 tín hiệu, Top 10 VN30 và Top 10 VNMidcap dòng tiền mới vào, Top 10 duy trì, cảnh báo thoát, dòng tiền theo ngành, hiệu quả tín hiệu.
+2. Quét các mã thuộc 3 rổ VN30, VNMidCap và VNSmallCap (khoảng 300 mã HOSE). Tính MCDX và các chỉ số: đèn thị trường, Top 5 tín hiệu, Top 10 VN30 và Top 10 VNMidcap dòng tiền mới vào, Top 10 duy trì, cảnh báo thoát, dòng tiền theo ngành, hiệu quả tín hiệu.
 3. Đăng dashboard lên **GitHub Pages**. Anh chỉ cần mở link, xem được cả trên điện thoại.
 
 Nếu lúc 17:05 SSI chưa có dữ liệu phiên hôm nay, tool tự thử lại lúc 17:35 và 18:05. Thứ 7 và chủ nhật tool không chạy.
