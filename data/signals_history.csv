@@ -1,5 +1,6 @@
 date,list,symbol,price
 2026-10-02,top5,NT2,22300.0
+2026-10-02,top5,BVH,75800.0
 2026-10-02,top5,HAG,14800.0
 2026-10-02,top5,MSN,70700.0
 2026-10-02,top5,PHR,33200.0
@@ -7,3 +8,4 @@ date,list,symbol,price
 2026-10-02,new_MID,NT2,22300.0
 2026-10-02,new_MID,HAG,14800.0
 2026-10-02,new_MID,PHR,33200.0
+2026-10-02,sustain,BVH,75800.0
