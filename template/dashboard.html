@@ -207,8 +207,8 @@ footer{font-size:12px;color:var(--ink-3);line-height:1.6;max-width:80ch}
 
   <section class="panel" aria-labelledby="hSus">
     <div class="panel-head"><h2 id="hSus">Top 10 dòng tiền lớn duy trì</h2><span class="faint small" id="cSus"></span></div>
-    <div class="tbl-wrap"><table><thead><tr><th class="l">#</th><th class="l">Mã</th><th class="l">Rổ</th><th>Chuỗi Banker ≥ 10</th><th>Banker TB</th><th>Banker</th><th>Giá · %</th><th>Giá trong chuỗi</th><th>Trên MA20</th><th>RS</th><th>Ngoại 5p</th><th class="l">Banker 20 phiên</th></tr></thead><tbody id="tSus"></tbody></table></div>
-    <p class="note">Banker ≥ 10 liên tục từ <span id="susMin">3</span> phiên, Banker ≥ MA10, giá trên MA20; loại mã đã tăng quá 25% trong chuỗi. Xếp theo số phiên × Banker trung bình. Nhãn "Tăng nóng" khi giá cao hơn MA20 trên 10%.</p>
+    <div class="tbl-wrap"><table><thead><tr><th class="l">#</th><th class="l">Mã</th><th class="l">Rổ</th><th>Chuỗi duy trì</th><th>Banker TB</th><th>Banker</th><th>Giá · %</th><th>Giá trong chuỗi</th><th>Trên MA20</th><th>RS</th><th>Ngoại 5p</th><th class="l">Banker 20 phiên</th></tr></thead><tbody id="tSus"></tbody></table></div>
+    <p class="note">Banker &gt; 0 và Banker ≥ MA10 liên tục từ <span id="susMin">3</span> phiên, giá trên MA20; loại mã đã tăng quá 25% trong chuỗi. Xếp theo số phiên × Banker trung bình. Nhãn "Tăng nóng" khi giá cao hơn MA20 trên 10%.</p>
   </section>
 
   <div class="grid-2">
@@ -448,7 +448,7 @@ function openDetail(sym){
   const tags=[];
   if(x.new_in)tags.push('<span class="tag">Banker vào mới</span>');
   if(x.cross)tags.push('<span class="tag cross">Cắt lên MA10</span>');
-  if(x.streak>=SUS)tags.push(`<span class="tag good">Banker ≥ 10: ${x.streak} phiên</span>`);
+  if(x.streak>=SUS)tags.push(`<span class="tag good">Dòng tiền duy trì ${x.streak} phiên</span>`);
   if(x.ext>10)tags.push('<span class="tag hotx">Tăng nóng</span>');
   tags.push(`<span class="chip">RS <b class="num">${f0(x.rs)}</b></span>`,`<span class="chip">Ngoại 5 phiên <b class="num ${cls(x.f5)}">${sgn(x.f5,f1)} tỷ</b></span>`,`<span class="chip">GTGD TB20 <b class="num">${f1(x.value20)} tỷ</b></span>`,`<span class="chip">Cắt lỗ gợi ý <b class="num">${price(x.stop)}</b></span>`,`<span class="chip">Mục tiêu <b class="num">${price(x.target)}</b></span>`);
   $("sheet").innerHTML=`

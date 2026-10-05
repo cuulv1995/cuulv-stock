@@ -9,7 +9,7 @@ BANKER_P, BANKER_BASE, BANKER_SENS = 50, 50, 1.5
 HOT_P, HOT_BASE, HOT_SENS = 40, 30, 0.7
 BANKER_MA = 10
 MIN_VALUE20 = 5e9            # GTGD TB20 tối thiểu (đồng)
-SUSTAIN_MIN_STREAK = 3          # số phiên liên tiếp Banker ≥ 10 để vào danh sách duy trì
+SUSTAIN_MIN_STREAK = 3          # số phiên liên tiếp có dòng tiền lớn (Banker > 0 và ≥ MA10) để vào danh sách duy trì
 SUSTAIN_MAX_GAIN = 25.0      # % tăng tối đa trong chuỗi
 HOT_EXT_MA20 = 10.0          # % trên MA20 coi là tăng nóng
 TOP_N = 10
@@ -70,7 +70,7 @@ def compute(prices: pd.DataFrame, universe: dict[str, list[str]], sectors: dict[
     m1 = bma.shift(1)
     new_in = (banker > 0.5) & (b5 <= 0.5)
     cross = (b1 <= m1) & (banker > bma) & (banker > 0)
-    streak = _streak(banker >= 10)
+    streak = _streak((banker > 0.5) & (banker >= bma))  # chuỗi phiên dòng tiền lớn được giữ
     liquid = value20 >= MIN_VALUE20
 
     # ---- chỉ số thị trường
