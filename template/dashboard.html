@@ -145,6 +145,22 @@ svg text{font-family:var(--f-num);fill:var(--ink-3);font-size:10.5px}
 .fnet{display:flex;align-items:center;gap:6px;justify-content:flex-end}
 .fnet .b{width:60px;height:8px;position:relative;background:var(--surface-2);border-radius:2px}
 .fnet .b i{position:absolute;top:0;bottom:0;border-radius:2px}
+/* tiêu chí */
+.checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 16px}
+.ck{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--line);font-size:13px}
+.ck .ic{font-weight:700;text-align:center}
+.ck.ok .ic{color:var(--good)} .ck.no .ic{color:var(--bad)} .ck.na .ic{color:var(--ink-3)}
+.ck .nm{min-width:0} .ck .nm small{display:block;color:var(--ink-3);font-size:11px}
+.ck .val{font-family:var(--f-num);font-size:12px;color:var(--ink-2);white-space:nowrap}
+.meter{display:flex;gap:3px;align-items:center}
+.meter i{flex:1;max-width:14px;min-width:6px;width:10px;height:10px;border-radius:2px;background:var(--surface-2);border:1px solid var(--line)}
+.meter i.on{background:var(--good);border-color:var(--good)}
+.crit{width:100%;border-collapse:collapse;font-size:13px}
+.crit td,.crit th{white-space:normal;font-family:var(--f-body);text-align:left;vertical-align:top;padding:7px 8px}
+.crit td.nb{white-space:nowrap}
+details.more summary{cursor:pointer;color:var(--accent);font-size:13px;font-weight:600}
+details.more summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (max-width:640px){ .checks{grid-template-columns:minmax(0,1fr)} }
 footer{font-size:12px;color:var(--ink-3);line-height:1.6;max-width:80ch}
 
 @media (max-width:1100px){ .top5{grid-template-columns:repeat(3,minmax(0,1fr))} }
@@ -220,6 +236,27 @@ footer{font-size:12px;color:var(--ink-3);line-height:1.6;max-width:80ch}
     </section>
   </div>
 
+  <section class="panel" aria-labelledby="hCrit" id="tieu-chi">
+    <div class="panel-head"><h2 id="hCrit">Tiêu chí một cổ phiếu tốt đáng đầu tư</h2><span class="faint small">Mua khi đạt đủ hai vế</span></div>
+    <p class="note" style="font-size:13px;color:var(--ink-2)">Vế <b>thời điểm</b> (10 tiêu chí kỹ thuật và dòng tiền) được tool tự chấm cho từng mã: xem điểm x/10 ở Top 5 và bảng chấm khi bấm vào mã. Vế <b>doanh nghiệp tốt</b> cần báo cáo tài chính nên anh kiểm tra theo bảng dưới; ưu tiên mã đạt từ 6/10, bắt buộc EPS tăng trưởng và dòng tiền kinh doanh dương.</p>
+    <div class="grid-2" style="gap:24px">
+      <div class="tbl-wrap"><h3 style="margin:0 0 6px">Vế 1 · Doanh nghiệp tốt (tự kiểm tra)</h3><table class="crit"><thead><tr><th>Chỉ số</th><th>Ngưỡng</th></tr></thead><tbody>
+        <tr><td>EPS quý so với cùng kỳ</td><td class="nb">≥ 20–25%</td></tr>
+        <tr><td>EPS 3 năm gần nhất</td><td class="nb">tăng đều ≥ 15%/năm</td></tr>
+        <tr><td>Doanh thu quý so với cùng kỳ</td><td class="nb">≥ 15%</td></tr>
+        <tr><td>ROE</td><td class="nb">≥ 15%</td></tr>
+        <tr><td>Biên lợi nhuận gộp, ròng</td><td>ổn định hoặc tăng</td></tr>
+        <tr><td>Nợ vay / vốn chủ (trừ ngân hàng, chứng khoán)</td><td class="nb">&lt; 1 lần</td></tr>
+        <tr><td>Dòng tiền kinh doanh</td><td>dương, xấp xỉ lợi nhuận</td></tr>
+        <tr><td>P/E so với ngành · PEG</td><td>không cao hơn ngành nhiều · PEG &lt; 1</td></tr>
+        <tr><td>Ngân hàng: nợ xấu, CASA, NIM, P/B</td><td>NPL &lt; 2%; CASA, NIM tăng</td></tr>
+        <tr><td>Vị thế ngành, lãnh đạo, giao dịch nội bộ, cổ tức</td><td>dẫn đầu; nội bộ không bán ròng</td></tr>
+      </tbody></table></div>
+      <div class="tbl-wrap"><h3 style="margin:0 0 6px">Vế 2 · Thời điểm tốt (tool tự chấm)</h3><table class="crit"><thead><tr><th>Tiêu chí</th><th>Ngưỡng</th></tr></thead><tbody id="critTiming"></tbody></table></div>
+    </div>
+    <p class="note">Các ngưỡng là quy tắc phổ biến để tham khảo, không phải khuyến nghị đầu tư.</p>
+  </section>
+
   <footer id="foot"></footer>
 </div>
 
@@ -241,7 +278,18 @@ const price=v=>v==null?"–":(v>=500?nf(v/1000,2):f2(v));
 const fmtD=iso=>iso.slice(8,10)+"/"+iso.slice(5,7);
 const fullD=iso=>iso.split("-").reverse().join("/");
 const heat=v=>v==null?"var(--heat-0)":v<2?"var(--heat-0)":v<6?"var(--heat-1)":v<10?"var(--heat-2)":v<15?"var(--heat-3)":"var(--heat-4)";
-const R=D.rows, S=D.stocks, DATES=D.series.dates;
+const R=D.rows, S=D.stocks, DATES=D.series.dates, CK=D.checks||{};
+const CRIT={market:["Đèn thị trường","Tấn công hoặc Thận trọng",v=>({attack:"Tấn công",caution:"Thận trọng",defense:"Phòng thủ"})[v]||"–"],
+ trend:["Xu hướng cổ phiếu","giá trên MA50 và MA200, MA200 đi lên",v=>v==null?"chưa đủ dữ liệu":sgn(v,f1)+"% so với MA200"],
+ rs:["Sức mạnh giá (RS)","≥ 80",v=>v==null?"–":"RS "+f0(v)],
+ near_high:["Gần đỉnh 52 tuần","cách đỉnh ≤ 15%",v=>v==null?"–":"cách đỉnh "+f1(Math.abs(v))+"%"],
+ base:["Nền giá chặt","biên độ 20 phiên ≤ 15%",v=>"biên độ "+f1(v)+"%"],
+ banker:["Dòng tiền lớn","Banker > 0 và ≥ MA10",v=>"Banker "+f1(v)],
+ volume:["Khối lượng xác nhận","KL/TB20 ≥ 1,5 ở phiên tăng (5 phiên)",v=>v==null?"chưa có phiên tăng":"cao nhất "+f2(v)+"×"],
+ foreign:["Khối ngoại","mua ròng 5 phiên",v=>v==null?"không có dữ liệu":sgn(v,f1)+" tỷ"],
+ not_hot:["Chưa tăng nóng","giá cách MA20 ≤ 10%",v=>v==null?"–":sgn(v,f1)+"% so với MA20"],
+ liquidity:["Thanh khoản","GTGD TB20 ≥ 5 tỷ",v=>f1(v)+" tỷ"]};
+const meter=n=>`<span class="meter" aria-label="Đạt ${n}/10 tiêu chí thời điểm">${Array.from({length:10},(_,i)=>`<i class="${i<n?"on":""}"></i>`).join("")}</span>`;
 const NS="http://www.w3.org/2000/svg";
 function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e}
 function niceTicks(lo,hi,n){const span=hi-lo||1,s0=span/n,mag=Math.pow(10,Math.floor(Math.log10(s0))),e=s0/mag,st=(e>=7.5?10:e>=3.5?5:e>=1.5?2:1)*mag;const t=[];for(let v=Math.ceil(lo/st)*st;v<=hi+1e-9;v+=st)t.push(+v.toFixed(6));return t}
@@ -279,6 +327,7 @@ $("top5").innerHTML=T5.length?T5.map(x=>`<button class="pick" type="button" data
   <div class="pick-top"><span class="s">${x.sym}</span><span class="sc">${f0(x.total)}</span></div>
   <div class="small faint" style="margin-top:-8px">${NAME[x.basket]} · ${x.sector}</div>
   <div class="flags">${x.new_in?'<span class="tag">Banker mới vào</span>':x.cross?'<span class="tag cross">Cắt lên MA10</span>':''}${x.streak>=5?`<span class="tag good">Duy trì ${x.streak} phiên</span>`:''}${hotTag(x)}</div>
+  <div style="display:flex;flex-direction:column;gap:4px"><div class="small" style="display:flex;justify-content:space-between"><span class="muted">Tiêu chí thời điểm</span><b class="num">${f0(x.timing)}/10</b></div>${meter(x.timing||0)}</div>
   <div class="parts">${Object.entries(PN).map(([k,[n,m]])=>`<span>${n}</span><span class="bar"><i style="width:${100*x.parts[k]/m}%"></i></span><span class="n">${f0(x.parts[k])}/${m}</span>`).join("")}</div>
   <div class="plan"><span>Giá</span><b>${price(x.price)}</b><span>Cắt lỗ</span><b class="down">${price(x.stop)}</b><span>Mục tiêu</span><b class="up">${price(x.target)}</b><span>Lãi/Rủi ro</span><b>${x.rr==null?"–":f1(x.rr)}</b></div>
  </button>`).join(""):`<p class="empty">Hôm nay không có mã nào thuộc 3 danh sách.</p>`;
@@ -315,6 +364,9 @@ $("leaders").innerHTML=D.leaders.map((l,i)=>`<span class="chip">#${i+1} <b>${l.s
   let h=`<div></div>`+ds.map(d=>`<div class="ch">${fmtD(d)}</div>`).join("");
   for(const r of D.sectors.rows){h+=`<div class="rl">${r.sector}</div>`+r.vals.map((v,j)=>`<div class="c" style="background:${heat(v)}" title="${r.sector} · ${fmtD(ds[j])} · Banker TB ${f1(v)}">${v>=1?Math.round(v):""}</div>`).join("")}
   host.innerHTML=h})();
+
+/* tiêu chí thời điểm (bảng tham chiếu) */
+$("critTiming").innerHTML=Object.values(CRIT).map(([n,th])=>`<tr><td>${n}</td><td>${th}</td></tr>`).join("");
 
 /* line charts */
 function lineChart(host,dates,series,opt){
@@ -400,6 +452,9 @@ function openDetail(sym){
    <section class="panel"><div class="panel-head"><h3>Giá và MCDX, ${n} phiên</h3>
      <div class="legend"><span><i style="background:var(--banker)"></i>Banker</span><span><i style="background:var(--hot)"></i>Hot Money</span><span><i style="background:var(--retail)"></i>Retailer</span><span><i class="line" style="background:var(--ink)"></i>MA10 Banker</span></div></div>
      <div class="chart" id="dChart"></div><p class="note">Vùng tô nhạt là 5 phiên gần nhất. Đường nét đứt xanh đánh dấu phiên Banker bắt đầu xuất hiện; đường đỏ là mức cắt lỗ gợi ý.</p></section>
+   <section class="panel"><div class="panel-head"><h3>Tiêu chí thời điểm · đạt ${f0(x.timing)}/10</h3>${meter(x.timing||0)}</div>
+     <div class="checks">${(CK[sym]||[]).map(c=>{const d=CRIT[c.k]||[c.k,"",v=>v];const cl=c.ok==null?"na":c.ok?"ok":"no";return `<div class="ck ${cl}"><span class="ic">${c.ok==null?"–":c.ok?"✓":"✗"}</span><span class="nm">${d[0]}<small>${d[1]}</small></span><span class="val">${d[2](c.v)}</span></div>`}).join("")}</div>
+     <p class="note">Vế doanh nghiệp tốt (EPS, ROE, nợ vay, định giá…) cần kiểm tra thêm theo mục <a href="#tieu-chi" style="color:var(--accent)">Tiêu chí cổ phiếu tốt</a> cuối trang.</p></section>
    <section class="panel"><h3>Biến động 5 phiên gần nhất</h3><div class="tbl-wrap"><table>
      <thead><tr><th class="l">Ngày</th><th>Giá</th><th>%</th><th>KL (nghìn cp)</th><th>KL/TB20</th><th>Banker</th><th>Δ Banker</th><th>Hot Money</th><th>Khối ngoại ròng (tỷ)</th></tr></thead>
      <tbody>${rows.map(r=>`<tr><td class="l">${fullD(r.d)}</td><td>${price(r.p)}</td><td class="${cls(r.c)}">${sgn(r.c)}%</td><td>${f0(r.v/1000)}</td><td>${r.vr==null?"–":f2(r.vr)+"×"}</td><td><b>${f1(r.b)}</b></td><td class="${cls(r.db)}">${sgn(r.db,f1)}</td><td>${f1(r.h)}</td>
@@ -407,7 +462,7 @@ function openDetail(sym){
   $("overlay").hidden=false;mcdxChart($("dChart"),sym);$("closeBtn").focus();$("closeBtn").onclick=closeDetail;
 }
 function closeDetail(){$("overlay").hidden=true;if(lastFocus)lastFocus.focus()}
-$("overlay").addEventListener("click",e=>{if(e.target.id==="overlay")closeDetail()});
+$("overlay").addEventListener("click",e=>{if(e.target.id==="overlay"||e.target.closest('a[href^="#"]')){$("overlay").hidden=true}});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("overlay").hidden)closeDetail()});
 document.querySelectorAll("[data-sym]").forEach(nd=>{nd.addEventListener("click",()=>openDetail(nd.dataset.sym));
   if(nd.tagName==="TR")nd.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openDetail(nd.dataset.sym)}})});

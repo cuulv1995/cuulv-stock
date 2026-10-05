@@ -57,7 +57,9 @@ def compute(prices: pd.DataFrame, universe: dict[str, list[str]], sectors: dict[
     hot = (HOT_SENS * (rsi_wilder(C, HOT_P) - HOT_BASE)).clip(0, 20)
     bma = banker.fillna(0).rolling(BANKER_MA).mean()
     ma20, ma50 = C.rolling(20).mean(), C.rolling(50).mean()
+    ma200 = C.rolling(200, min_periods=150).mean()
     vma20 = V.rolling(20).mean()
+    up_vr = (V / vma20).where(C > C.shift())  # KL/TB20 của các phiên tăng giá
     value20 = val.rolling(20).mean()
     tr = pd.concat([H - Lo, (H - C.shift()).abs(), (Lo - C.shift()).abs()]).groupby(level=0).max()
     atr14 = tr.ewm(alpha=1 / 14, adjust=False).mean()
@@ -106,7 +108,8 @@ def compute(prices: pd.DataFrame, universe: dict[str, list[str]], sectors: dict[
         x = s.iloc[t] if col is None else s[col].iloc[t]
         return None if pd.isna(x) else float(x)
 
-    rows = {}
+    rows, checks = {}, {}
+    market_ok = state != "defense"
     for s in symbols:
         c = C[s].iloc[t]
         vr = V[s].iloc[t] / vma20[s].iloc[t] if vma20[s].iloc[t] else np.nan
@@ -135,6 +138,27 @@ def compute(prices: pd.DataFrame, universe: dict[str, list[str]], sectors: dict[
             near_high=c / hi250[s].iloc[t] if pd.notna(hi250[s].iloc[t]) else np.nan,
             tight=(hi20[s].iloc[t] - lo20[s].iloc[t]) / c,
         )
+        # ---- 10 tiêu chí thời điểm (docs/tieu-chi-co-phieu-tot.md, vế 2)
+        m50, m200 = ma50[s].iloc[t], ma200[s].iloc[t]
+        m200_prev = ma200[s].iloc[t - 20] if t >= 20 else np.nan
+        trend_ok = None if pd.isna(m200) else bool(c > m50 and c > m200 and pd.notna(m200_prev) and m200 > m200_prev)
+        near = rows[s]["near_high"]
+        vmax5 = up_vr[s].iloc[t - 4:t + 1].max()
+        rsv = rows[s]["rs"]
+        ck = [
+            ("market", market_ok, state),
+            ("trend", trend_ok, None if pd.isna(m200) else (c / m200 - 1) * 100),
+            ("rs", None if pd.isna(rsv) else bool(rsv >= 80), rsv),
+            ("near_high", None if pd.isna(near) else bool(near >= 0.85), None if pd.isna(near) else (near - 1) * 100),
+            ("base", bool(rows[s]["tight"] <= 0.15), rows[s]["tight"] * 100),
+            ("banker", bool(banker[s].iloc[t] > 0 and banker[s].iloc[t] >= bma[s].iloc[t]), banker[s].iloc[t]),
+            ("volume", None if pd.isna(vmax5) else bool(vmax5 >= 1.5), None if pd.isna(vmax5) else vmax5),
+            ("foreign", None if pd.isna(f5) else bool(f5 > 0), None if pd.isna(f5) else float(f5) / 1e9),
+            ("not_hot", None if pd.isna(ext) else bool(ext <= HOT_EXT_MA20), ext),
+            ("liquidity", bool(liquid[s].iloc[t]), value20[s].iloc[t] / 1e9),
+        ]
+        checks[s] = [{"k": k, "ok": ok, "v": None if v is None or (isinstance(v, float) and np.isnan(v)) else (v if isinstance(v, str) else float(v))} for k, ok, v in ck]
+        rows[s]["timing"] = sum(1 for _, ok, _ in ck if ok)
 
     R = pd.DataFrame(rows).T
     num = R.columns.difference(["sym", "basket", "sector", "liquid", "new_in", "cross", "above_ma20"])
@@ -237,6 +261,7 @@ def compute(prices: pd.DataFrame, universe: dict[str, list[str]], sectors: dict[
                   "top5": [{**rec(r), "parts": {k: round(float(r["p_" + k]), 1) for k in ["mcdx", "rs", "sector", "volume", "base"]}} for _, r in top5.iterrows()],
                   "out": list(R[R.liquid & (((b5.iloc[t].reindex(R.index) >= 5) & (R.d5 <= -5)) | ((R.b1 > 0.5) & (R.b <= 0.5)))].sym)},
         "exits": exits,
+        "checks": checks,
         "sectors": {"dates": [d.isoformat() for d in dates[max(0, t - 9):t + 1]],
                     "rows": sorted([{"sector": k, "vals": [round(float(x), 1) for x in sec_df[k].iloc[max(0, t - 9):t + 1]]} for k in sec_df.columns],
                                    key=lambda r: -r["vals"][-1])},

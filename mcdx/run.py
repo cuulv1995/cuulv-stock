@@ -63,7 +63,7 @@ def refresh_universe(client, today: dt.date) -> dict:
     return uni
 
 
-def update_prices(client, uni: dict, today: dt.date) -> pd.DataFrame:
+def update_prices(client, uni: dict, today: dt.date, cutoff: dt.date) -> pd.DataFrame:
     df = store.load_prices()
     symbols = uni["VN30"] + uni["MID"] + [INDEX]
 
@@ -74,7 +74,7 @@ def update_prices(client, uni: dict, today: dt.date) -> pd.DataFrame:
     for i, s in enumerate(missing, 1):
         try:
             rows = client.daily_ohlc_range(s, start, today)
-            df = store.upsert_prices(df, rows, today)
+            df = store.upsert_prices(df, [r for r in rows if r["date"] <= cutoff], today)
             log.info("[%d/%d] Lịch sử %s: %d phiên", i, len(missing), s, len(rows))
         except Exception as e:
             log.warning("Bỏ qua lịch sử %s: %s", s, e)
@@ -84,12 +84,14 @@ def update_prices(client, uni: dict, today: dt.date) -> pd.DataFrame:
     # 2) Cập nhật 10 ngày gần nhất cho cả sàn HOSE trong 1 lần gọi (kèm khối ngoại)
     rows = client.daily_stock_price(today - dt.timedelta(days=10), today, market="HOSE")
     keep = set(symbols)
-    df = store.upsert_prices(df, [r for r in rows if r["symbol"] in keep], today)
+    # Trước 15:00 dữ liệu hôm nay chưa chốt: bỏ qua để không lưu giá giữa phiên
+    df = store.upsert_prices(df, [r for r in rows if r["symbol"] in keep and r["date"] <= cutoff], today)
     log.info("DailyStockPrice HOSE: %d dòng", len(rows))
 
     # 3) VN-Index 10 ngày gần nhất
     try:
-        df = store.upsert_prices(df, client.daily_ohlc(INDEX, today - dt.timedelta(days=10), today), today)
+        idx_rows = client.daily_ohlc(INDEX, today - dt.timedelta(days=10), today)
+        df = store.upsert_prices(df, [r for r in idx_rows if r["date"] <= cutoff], today)
     except Exception as e:
         log.warning("Không cập nhật được VNINDEX: %s", e)
     store.save_prices(df)
@@ -127,7 +129,8 @@ def main():
         client = SSIClient(os.environ.get("SSI_CONSUMER_ID", ""), os.environ.get("SSI_CONSUMER_SECRET", ""))
         client.authenticate()
         uni = refresh_universe(client, today)
-        prices = update_prices(client, uni, today)
+        cutoff = today if now.hour >= 15 or args.today else today - dt.timedelta(days=1)
+        prices = update_prices(client, uni, today, cutoff)
         uni = {"VN30": uni["VN30"], "MID": uni["MID"]}
         source = "SSI FastConnect Data"
 
