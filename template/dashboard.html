@@ -204,7 +204,7 @@ footer{font-size:12px;color:var(--ink-3);line-height:1.6;max-width:80ch}
   <section class="panel" aria-labelledby="hSus">
     <div class="panel-head"><h2 id="hSus">Top 10 dòng tiền lớn duy trì</h2><span class="faint small" id="cSus"></span></div>
     <div class="tbl-wrap"><table><thead><tr><th class="l">#</th><th class="l">Mã</th><th class="l">Rổ</th><th>Chuỗi Banker ≥ 10</th><th>Banker TB</th><th>Banker</th><th>Giá · %</th><th>Giá trong chuỗi</th><th>Trên MA20</th><th>RS</th><th>Ngoại 5p</th><th class="l">Banker 20 phiên</th></tr></thead><tbody id="tSus"></tbody></table></div>
-    <p class="note">Banker ≥ 10 liên tục từ 5 phiên, Banker ≥ MA10, giá trên MA20; loại mã đã tăng quá 25% trong chuỗi. Xếp theo số phiên × Banker trung bình. Nhãn "Tăng nóng" khi giá cao hơn MA20 trên 10%.</p>
+    <p class="note">Banker ≥ 10 liên tục từ <span id="susMin">3</span> phiên, Banker ≥ MA10, giá trên MA20; loại mã đã tăng quá 25% trong chuỗi. Xếp theo số phiên × Banker trung bình. Nhãn "Tăng nóng" khi giá cao hơn MA20 trên 10%.</p>
   </section>
 
   <div class="grid-2">
@@ -278,7 +278,7 @@ const price=v=>v==null?"–":(v>=500?nf(v/1000,2):f2(v));
 const fmtD=iso=>iso.slice(8,10)+"/"+iso.slice(5,7);
 const fullD=iso=>iso.split("-").reverse().join("/");
 const heat=v=>v==null?"var(--heat-0)":v<2?"var(--heat-0)":v<6?"var(--heat-1)":v<10?"var(--heat-2)":v<15?"var(--heat-3)":"var(--heat-4)";
-const R=D.rows, S=D.stocks, DATES=D.series.dates, CK=D.checks||{};
+const R=D.rows, S=D.stocks, DATES=D.series.dates, CK=D.checks||{}, SUS=(D.params&&D.params.sustain_min)||3;
 const CRIT={market:["Đèn thị trường","Tấn công hoặc Thận trọng",v=>({attack:"Tấn công",caution:"Thận trọng",defense:"Phòng thủ"})[v]||"–"],
  trend:["Xu hướng cổ phiếu","giá trên MA50 và MA200, MA200 đi lên",v=>v==null?"chưa đủ dữ liệu":sgn(v,f1)+"% so với MA200"],
  rs:["Sức mạnh giá (RS)","≥ 80",v=>v==null?"–":"RS "+f0(v)],
@@ -326,7 +326,7 @@ const PN={mcdx:["MCDX",30],rs:["RS",25],sector:["Ngành",15],volume:["Khối lư
 $("top5").innerHTML=T5.length?T5.map(x=>`<button class="pick" type="button" data-sym="${x.sym}">
   <div class="pick-top"><span class="s">${x.sym}</span><span class="sc">${f0(x.total)}</span></div>
   <div class="small faint" style="margin-top:-8px">${NAME[x.basket]} · ${x.sector}</div>
-  <div class="flags">${x.new_in?'<span class="tag">Banker mới vào</span>':x.cross?'<span class="tag cross">Cắt lên MA10</span>':''}${x.streak>=5?`<span class="tag good">Duy trì ${x.streak} phiên</span>`:''}${hotTag(x)}</div>
+  <div class="flags">${x.new_in?'<span class="tag">Banker mới vào</span>':x.cross?'<span class="tag cross">Cắt lên MA10</span>':''}${x.streak>=SUS?`<span class="tag good">Duy trì ${x.streak} phiên</span>`:''}${hotTag(x)}</div>
   <div style="display:flex;flex-direction:column;gap:4px"><div class="small" style="display:flex;justify-content:space-between"><span class="muted">Tiêu chí thời điểm</span><b class="num">${f0(x.timing)}/10</b></div>${meter(x.timing||0)}</div>
   <div class="parts">${Object.entries(PN).map(([k,[n,m]])=>`<span>${n}</span><span class="bar"><i style="width:${100*x.parts[k]/m}%"></i></span><span class="n">${f0(x.parts[k])}/${m}</span>`).join("")}</div>
   <div class="plan"><span>Giá</span><b>${price(x.price)}</b><span>Cắt lỗ</span><b class="down">${price(x.stop)}</b><span>Mục tiêu</span><b class="up">${price(x.target)}</b><span>Lãi/Rủi ro</span><b>${x.rr==null?"–":f1(x.rr)}</b></div>
@@ -343,13 +343,14 @@ function renderNew(b,tb,cnt){const list=D.lists.new[b]||[];$(cnt).textContent=`$
 renderNew("VN30","tVN30","cVN30");renderNew("MID","tMID","cMID");
 
 /* sustain */
+$("susMin").textContent=SUS;
 $("cSus").textContent=`${D.lists.sustain.length} mã đạt điều kiện · xếp theo số phiên × Banker trung bình`;
 $("tSus").innerHTML=D.lists.sustain.slice(0,10).map((s,i)=>{const x=R[s];return `<tr class="click" tabindex="0" data-sym="${s}">
   <td class="l rank">${i+1}</td><td class="l sym">${s}${hotTag(x)}<small>${x.sector}</small></td>
   <td class="l"><span class="chip" style="padding:1px 8px">${NAME[x.basket]}</span></td>
   <td><b>${x.streak}</b> phiên</td><td>${f1(x.streak_avg)}</td><td>${f1(x.b)}</td>${priceCell(x)}
   <td class="${cls(x.streak_gain)}">${sgn(x.streak_gain,f1)}%</td><td>${sgn(x.ext,f1)}%</td><td>${f0(x.rs)}</td>
-  <td class="${cls(x.f5)}">${sgn(x.f5,f1)}</td><td class="l">${spark(s,120)}</td></tr>`}).join("")||`<tr><td colspan="12" class="empty">Chưa có mã duy trì đủ 5 phiên.</td></tr>`;
+  <td class="${cls(x.f5)}">${sgn(x.f5,f1)}</td><td class="l">${spark(s,120)}</td></tr>`}).join("")||`<tr><td colspan="12" class="empty">Chưa có mã duy trì đủ ${SUS} phiên.</td></tr>`;
 
 /* exits */
 const SN={exit:"Thoát",watch:"Theo dõi",hold:"Giữ",unknown:"Không có dữ liệu"};
@@ -441,7 +442,7 @@ function openDetail(sym){
   const tags=[];
   if(x.new_in)tags.push('<span class="tag">Banker vào mới</span>');
   if(x.cross)tags.push('<span class="tag cross">Cắt lên MA10</span>');
-  if(x.streak>=5)tags.push(`<span class="tag good">Banker ≥ 10: ${x.streak} phiên</span>`);
+  if(x.streak>=SUS)tags.push(`<span class="tag good">Banker ≥ 10: ${x.streak} phiên</span>`);
   if(x.ext>10)tags.push('<span class="tag hotx">Tăng nóng</span>');
   tags.push(`<span class="chip">RS <b class="num">${f0(x.rs)}</b></span>`,`<span class="chip">Ngoại 5 phiên <b class="num ${cls(x.f5)}">${sgn(x.f5,f1)} tỷ</b></span>`,`<span class="chip">GTGD TB20 <b class="num">${f1(x.value20)} tỷ</b></span>`,`<span class="chip">Cắt lỗ gợi ý <b class="num">${price(x.stop)}</b></span>`,`<span class="chip">Mục tiêu <b class="num">${price(x.target)}</b></span>`);
   $("sheet").innerHTML=`

@@ -9,7 +9,7 @@ BANKER_P, BANKER_BASE, BANKER_SENS = 50, 50, 1.5
 HOT_P, HOT_BASE, HOT_SENS = 40, 30, 0.7
 BANKER_MA = 10
 MIN_VALUE20 = 5e9            # GTGD TB20 tối thiểu (đồng)
-SUSTAIN_MIN_STREAK = 5
+SUSTAIN_MIN_STREAK = 3          # số phiên liên tiếp Banker ≥ 10 để vào danh sách duy trì
 SUSTAIN_MAX_GAIN = 25.0      # % tăng tối đa trong chuỗi
 HOT_EXT_MA20 = 10.0          # % trên MA20 coi là tăng nóng
 TOP_N = 10
@@ -269,6 +269,7 @@ def compute(prices: pd.DataFrame, universe: dict[str, list[str]], sectors: dict[
                   "top5": [{**rec(r), "parts": {k: round(float(r["p_" + k]), 1) for k in ["mcdx", "rs", "sector", "volume", "base"]}} for _, r in top5.iterrows()],
                   "out": list(R[R.liquid & (((b5.iloc[t].reindex(R.index) >= 5) & (R.d5 <= -5)) | ((R.b1 > 0.5) & (R.b <= 0.5)))].sym)},
         "exits": exits,
+        "params": {"sustain_min": SUSTAIN_MIN_STREAK, "sustain_max_gain": SUSTAIN_MAX_GAIN},
         "checks": checks,
         "sectors": {"dates": [d.isoformat() for d in dates[max(0, t - 9):t + 1]],
                     "rows": sorted([{"sector": k, "vals": [round(float(x), 1) for x in sec_df[k].iloc[max(0, t - 9):t + 1]]} for k in sec_df.columns],
