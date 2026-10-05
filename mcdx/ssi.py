@@ -52,6 +52,8 @@ def parse_date(v) -> dt.date | None:
 
 
 class SSIClient:
+    bulk_is_cheap = True  # DailyStockPrice trả cả sàn trong 1 lần gọi
+
     def __init__(self, consumer_id: str, consumer_secret: str, pause: float = 0.35, timeout: int = 30):
         if not consumer_id or not consumer_secret:
             raise SSIError("Thiếu SSI_CONSUMER_ID / SSI_CONSUMER_SECRET (đặt trong GitHub Secrets).")
@@ -168,6 +170,17 @@ class SSIClient:
                 "fnet": fnet,
             })
         return out
+
+    def daily_bulk(self, symbols: list[str], frm: dt.date, to: dt.date, today: dt.date | None = None) -> list[dict]:
+        """Cả sàn HOSE trong 1 lần gọi (kèm khối ngoại) + VN-Index."""
+        keep = set(symbols)
+        rows = [r for r in self.daily_stock_price(frm, to, market="HOSE") if r["symbol"] in keep]
+        if "VNINDEX" in keep:
+            try:
+                rows += self.daily_ohlc("VNINDEX", frm, to)
+            except SSIError as e:
+                log.warning("Không cập nhật được VNINDEX: %s", e)
+        return rows
 
     def daily_ohlc(self, symbol: str, frm: dt.date, to: dt.date) -> list[dict]:
         out = []

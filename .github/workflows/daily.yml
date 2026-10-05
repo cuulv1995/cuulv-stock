@@ -41,13 +41,21 @@ jobs:
           cache: pip
 
       - name: Cài thư viện
-        run: pip install -r requirements.txt
+        env:
+          VNSTOCK_DISABLE_AGENT_SETUP: "1"
+        run: |
+          pip install -r requirements.txt
+          # vnstock: nguồn dữ liệu tạm khi chưa có key SSI (phát hành qua kho gói của Vnstock)
+          pip install --extra-index-url https://vnstocks.com/api/simple vnstock vnai || echo "Không cài được vnstock"
 
       - name: Lấy dữ liệu SSI, tính MCDX, tạo dashboard
         id: run
         env:
           SSI_CONSUMER_ID: ${{ secrets.SSI_CONSUMER_ID }}
           SSI_CONSUMER_SECRET: ${{ secrets.SSI_CONSUMER_SECRET }}
+          VNSTOCK_API_KEY: ${{ secrets.VNSTOCK_API_KEY }}
+          VNSTOCK_DISABLE_AGENT_SETUP: "1"
+          DATA_SOURCE: ${{ vars.DATA_SOURCE }}
         run: |
           ARGS=""
           if [ "${{ inputs.demo }}" = "true" ]; then ARGS="--demo"; fi

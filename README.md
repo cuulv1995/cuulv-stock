@@ -33,6 +33,10 @@ Vào repo → **Settings** → **Secrets and variables** → **Actions** → **N
 
 Key lấy trên iBoard của SSI, sau khi đã đăng ký dịch vụ FastConnect Data.
 
+> **Chưa có key SSI?** Bỏ qua bước 2. Tool tự dùng **vnstock** (nguồn KBS, miễn phí) làm nguồn tạm. Khi thêm key SSI, tool tự chuyển sang SSI. Nếu SSI lỗi, tool lại tự quay về vnstock.
+> Nên đăng ký API key vnstock miễn phí tại [vnstocks.com/login](https://vnstocks.com/login), rồi thêm secret `VNSTOCK_API_KEY`. Có key, giới hạn tăng từ 20 lên 60 lượt gọi/phút, nên mỗi lần chạy nhanh hơn khoảng 3 lần.
+> Muốn ép tool dùng một nguồn cố định: vào *Settings → Secrets and variables → Actions → Variables*, tạo biến `DATA_SOURCE` = `ssi` hoặc `vnstock`.
+
 ### Bước 3. Bật GitHub Pages
 Vào **Settings** → **Pages** → mục **Source**, chọn **GitHub Actions**.
 
@@ -60,6 +64,7 @@ GitHub sẽ gửi email khi một lần chạy bị lỗi. Mở tab **Actions** 
 | --- | --- |
 | Thiếu SSI_CONSUMER_ID / SSI_CONSUMER_SECRET | Làm lại Bước 2. Tên secret phải viết đúng chữ hoa. |
 | Không lấy được token SSI | Key sai hoặc đã hết hạn. Tạo lại key trên iBoard rồi cập nhật secret. |
+| vnstock thất bại / Không cài được vnstock | Nguồn KBS tạm thời lỗi hoặc chặn máy chủ GitHub. Chạy lại sau, hoặc dùng key SSI. |
 | Lỗi kết nối hoặc hết thời gian chờ | SSI có thể chặn kết nối từ máy chủ nước ngoài. Báo Claude để chuyển sang chạy trên máy tính của anh (self-hosted runner). |
 | Chưa có dữ liệu phiên hôm nay | Bình thường nếu là ngày lễ. Dashboard sẽ giữ phiên gần nhất. |
 
@@ -74,6 +79,7 @@ Xem [docs/tieu-chi-co-phieu-tot.md](docs/tieu-chi-co-phieu-tot.md): 10 tiêu ch�
 ```
 .github/workflows/daily.yml   lịch chạy + đăng GitHub Pages
 mcdx/ssi.py                   gọi API SSI FastConnect Data
+mcdx/vnstock_source.py        nguồn tạm vnstock (KBS) khi chưa có key SSI
 mcdx/analysis.py              MCDX, danh sách, đèn thị trường, Top 5, cảnh báo
 mcdx/run.py                   chương trình chính
 template/dashboard.html       giao diện dashboard

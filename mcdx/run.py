@@ -50,7 +50,7 @@ def refresh_universe(client, today: dt.date) -> dict:
             vn100 = client.index_components("VN100")
             mid = [s for s in vn100 if s not in vn30]
         if len(vn30) >= 25 and len(mid) >= 30:
-            uni = {"VN30": vn30, "MID": mid, "updated": today.isoformat(), "source": "SSI IndexComponents"}
+            uni = {"VN30": vn30, "MID": mid, "updated": today.isoformat(), "source": getattr(client, "universe_label", "SSI IndexComponents")}
     except Exception as e:
         log.warning("Không lấy được rổ chỉ số từ SSI: %s", e)
     if not uni:
@@ -81,21 +81,43 @@ def update_prices(client, uni: dict, today: dt.date, cutoff: dt.date) -> pd.Data
         if i % 20 == 0:
             store.save_prices(df)
 
-    # 2) Cập nhật 10 ngày gần nhất cho cả sàn HOSE trong 1 lần gọi (kèm khối ngoại)
-    rows = client.daily_stock_price(today - dt.timedelta(days=10), today, market="HOSE")
+    # 2) Cập nhật 10 ngày gần nhất (kèm khối ngoại). Mã vừa tải lịch sử ở bước 1 không cần tải lại.
+    recent = symbols if getattr(client, "bulk_is_cheap", False) else [s for s in symbols if s not in missing]
+    rows = client.daily_bulk(recent, today - dt.timedelta(days=10), today, today=cutoff if cutoff == today else None)
     keep = set(symbols)
     # Trước 15:00 dữ liệu hôm nay chưa chốt: bỏ qua để không lưu giá giữa phiên
     df = store.upsert_prices(df, [r for r in rows if r["symbol"] in keep and r["date"] <= cutoff], today)
-    log.info("DailyStockPrice HOSE: %d dòng", len(rows))
-
-    # 3) VN-Index 10 ngày gần nhất
-    try:
-        idx_rows = client.daily_ohlc(INDEX, today - dt.timedelta(days=10), today)
-        df = store.upsert_prices(df, [r for r in idx_rows if r["date"] <= cutoff], today)
-    except Exception as e:
-        log.warning("Không cập nhật được VNINDEX: %s", e)
+    log.info("Cập nhật gần nhất: %d dòng", len(rows))
+    if missing and cutoff == today and hasattr(client, "foreign_today"):
+        fvol = client.foreign_today([s for s in missing if s != INDEX])
+        if fvol:
+            add = [{**r, "fnet": fvol[r["symbol"]] * r["close"]} for r in df[(df["date"] == today) & df["symbol"].isin(list(fvol))].to_dict("records")]
+            df = store.upsert_prices(df, add, today)
     store.save_prices(df)
     return df
+
+
+def pick_source(choice: str):
+    """Chọn nguồn dữ liệu. auto: SSI khi có key và đăng nhập được, nếu không thì vnstock."""
+    cid, secret = os.environ.get("SSI_CONSUMER_ID", ""), os.environ.get("SSI_CONSUMER_SECRET", "")
+    if choice in ("auto", "ssi") and cid and secret:
+        from .ssi import SSIClient
+        try:
+            c = SSIClient(cid, secret)
+            c.authenticate()
+            return c, "SSI FastConnect Data"
+        except Exception as e:
+            if choice == "ssi":
+                raise
+            log.warning("SSI lỗi (%s), chuyển sang vnstock.", e)
+    elif choice == "ssi":
+        raise RuntimeError("Thiếu SSI_CONSUMER_ID / SSI_CONSUMER_SECRET (đặt trong GitHub Secrets).")
+    else:
+        log.info("Chưa có key SSI, dùng vnstock.")
+    from .vnstock_source import VnstockClient
+    c = VnstockClient()
+    c.authenticate()
+    return c, "vnstock (KBS) – tạm thời"
 
 
 def main():
@@ -103,6 +125,8 @@ def main():
     ap.add_argument("--demo", action="store_true")
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--today", help="YYYY-MM-DD (thử nghiệm)")
+    ap.add_argument("--source", choices=["auto", "ssi", "vnstock"], default=os.environ.get("DATA_SOURCE", "auto") or "auto",
+                    help="auto: dùng SSI nếu có key, lỗi thì chuyển sang vnstock")
     args = ap.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
@@ -125,14 +149,11 @@ def main():
             log.info("Cuối tuần, không có phiên.")
             set_output("skip", "true")
             return
-        from .ssi import SSIClient
-        client = SSIClient(os.environ.get("SSI_CONSUMER_ID", ""), os.environ.get("SSI_CONSUMER_SECRET", ""))
-        client.authenticate()
+        client, source = pick_source(args.source)
         uni = refresh_universe(client, today)
         cutoff = today if now.hour >= 15 or args.today else today - dt.timedelta(days=1)
         prices = update_prices(client, uni, today, cutoff)
         uni = {"VN30": uni["VN30"], "MID": uni["MID"]}
-        source = "SSI FastConnect Data"
 
     report = compute(prices, uni, store.load_sectors(), store.load_holdings())
     latest = dt.date.fromisoformat(report["date"])
