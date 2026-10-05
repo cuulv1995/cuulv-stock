@@ -33,6 +33,8 @@ class VnstockClient:
         self.pause = pause if pause is not None else (1.1 if os.environ.get("VNSTOCK_API_KEY") else 3.2)
         self.retries = retries
         self._Quote = self._Listing = self._Trading = None
+        self.intraday = False       # chạy giữa phiên (12:00)
+        self.calib_path = None      # nơi lưu hệ số quy đổi bảng giá để dùng lại khi lịch sử chưa có phiên hôm nay
 
     # ------------------------------------------------------------------ setup
     def authenticate(self):
@@ -165,7 +167,7 @@ class VnstockClient:
         stocks = [s for s in symbols if s not in INDEXES]
 
         board, pf, vf = {}, None, None
-        if today and today in sessions and stocks:
+        if today and (today in sessions or self.intraday) and stocks:
             board = self.price_board(stocks)
             # Hiệu chỉnh đơn vị bảng giá theo lịch sử của 1 mã tham chiếu
             for ref in [s for s in stocks if s in board][:3]:
@@ -175,13 +177,34 @@ class VnstockClient:
                     pf, vf = self._pow10(h[0]["close"] / b["close"]), self._pow10(h[0]["volume"] / b["volume"]) if h[0]["volume"] else None
                     if pf and vf:
                         break
+            calib = {}
+            if self.calib_path:
+                try:
+                    import json
+                    calib = json.loads(open(self.calib_path, encoding="utf-8").read())
+                except Exception:
+                    calib = {}
+            if pf and vf and self.calib_path:
+                try:
+                    import json
+                    open(self.calib_path, "w", encoding="utf-8").write(json.dumps({"pf": pf, "vf": vf}))
+                except Exception:
+                    pass
+            elif calib.get("pf") and calib.get("vf"):
+                pf, vf = calib["pf"], calib["vf"]
+                log.info("Dùng hệ số bảng giá đã lưu (giá %g, khối lượng %g)", pf, vf)
             if not (pf and vf):
                 log.warning("Không hiệu chỉnh được bảng giá, chuyển sang tải từng mã.")
                 board = {}
             else:
                 log.info("Bảng giá: %d mã (hệ số giá %g, khối lượng %g)", len(board), pf, vf)
 
-        prev = sessions[-2] if (board and len(sessions) >= 2) else (sessions[-1] if sessions else None)
+        if board and today in sessions:
+            prev = sessions[-2] if len(sessions) >= 2 else None
+        else:
+            prev = sessions[-1] if sessions else None
+            if board and prev == today:
+                prev = sessions[-2] if len(sessions) >= 2 else None
         slow = []
         for s in stocks:
             b = board.get(s)

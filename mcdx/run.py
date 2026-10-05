@@ -81,7 +81,7 @@ def refresh_universe(client, today: dt.date) -> dict:
     return uni
 
 
-def update_prices(client, uni: dict, today: dt.date, cutoff: dt.date) -> pd.DataFrame:
+def update_prices(client, uni: dict, today: dt.date, cutoff: dt.date, persist_recent: bool = True) -> pd.DataFrame:
     df = store.load_prices()
     symbols = [s for b in BASKETS for s in uni.get(b, [])] + [INDEX]
 
@@ -99,6 +99,8 @@ def update_prices(client, uni: dict, today: dt.date, cutoff: dt.date) -> pd.Data
         if i % 20 == 0:
             store.save_prices(df)
 
+    store.save_prices(df)  # lịch sử luôn được lưu
+
     # 2) Cập nhật 10 ngày gần nhất (kèm khối ngoại). Mã vừa tải lịch sử ở bước 1 không cần tải lại.
     recent = symbols if getattr(client, "bulk_is_cheap", False) else [s for s in symbols if s not in missing]
     last_dates = df.groupby("symbol")["date"].max().to_dict() if len(df) else {}
@@ -113,7 +115,10 @@ def update_prices(client, uni: dict, today: dt.date, cutoff: dt.date) -> pd.Data
         if fvol:
             add = [{**r, "fnet": fvol[r["symbol"]] * r["close"]} for r in df[(df["date"] == today) & df["symbol"].isin(list(fvol))].to_dict("records")]
             df = store.upsert_prices(df, add, today)
-    store.save_prices(df)
+    if persist_recent:
+        store.save_prices(df)
+    else:
+        log.info("Giữa phiên: không lưu giá tạm vào kho dữ liệu.")
     return df
 
 
@@ -153,6 +158,7 @@ def main():
     now = dt.datetime.now(VN)
     today = dt.date.fromisoformat(args.today) if args.today else now.date()
     status = store.read_json(store.STATUS, {})
+    intraday = False
 
     if args.demo:
         from .demo import demo_prices
@@ -171,21 +177,30 @@ def main():
             return
         client, source = pick_source(args.source)
         uni = refresh_universe(client, today)
-        cutoff = today if now.hour >= 15 or args.today else today - dt.timedelta(days=1)
-        prices = update_prices(client, uni, today, cutoff)
+        mins = now.hour * 60 + now.minute
+        # 11:30–15:00: chế độ giữa phiên — dùng giá phiên sáng, lần chạy 17:00 sẽ ghi đè bằng giá đóng cửa
+        intraday = not args.today and 11 * 60 + 30 <= mins < 15 * 60
+        cutoff = today if (mins >= 15 * 60 or args.today or intraday) else today - dt.timedelta(days=1)
+        if hasattr(client, "intraday"):
+            client.intraday = intraday
+            client.calib_path = store.DATA / "board_calib.json"
+        if intraday:
+            log.info("Chế độ giữa phiên: số liệu tạm tính đến giờ chạy.")
+        prices = update_prices(client, uni, today, cutoff, persist_recent=not intraday)
         uni = {b: uni[b] for b in BASKETS if uni.get(b)}
 
     report = compute(prices, uni, store.load_sectors(), store.load_holdings())
     latest = dt.date.fromisoformat(report["date"])
-    complete = latest >= today
+    complete = latest >= today and not intraday
     report.update({"source": source, "demo": args.demo, "generated_at": now.strftime("%H:%M %d/%m/%Y"),
-                   "complete": complete})
+                   "complete": complete, "intraday": bool(intraday and latest >= today)})
     out = build_site(report)
     log.info("Đã tạo %s (phiên %s)", out, report["date"])
 
-    if not args.demo:
+    if not args.demo and not intraday:
         store.write_json(store.STATUS, {"date": today.isoformat(), "complete": complete, "latest_session": report["date"],
-                                        "generated_at": now.isoformat(timespec="minutes")})
+                                        "intraday": bool(intraday), "generated_at": now.isoformat(timespec="minutes")})
+    if not args.demo and not intraday:
         # lưu Top 5 và danh sách mỗi ngày để theo dõi "số phiên trong danh sách" và hiệu quả thực tế
         hist = pd.read_csv(store.SIGNALS) if store.SIGNALS.exists() else pd.DataFrame(columns=["date", "list", "symbol", "price"])
         hist = hist[hist["date"] != report["date"]]

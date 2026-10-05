@@ -2,10 +2,9 @@ name: Cập nhật dashboard MCDX
 
 on:
   schedule:
-    # Giờ GitHub là UTC. 10:05 UTC = 17:05 giờ Việt Nam. Hai lịch sau để thử lại nếu dữ liệu SSI chưa có.
-    - cron: "5 10 * * 1-5"
-    - cron: "35 10 * * 1-5"
-    - cron: "5 11 * * 1-5"
+    # Giờ GitHub là UTC (Việt Nam = UTC+7).
+    - cron: "5 5 * * 1-5"     # 12:05 – số liệu phiên sáng (tạm tính)
+    - cron: "5 10 * * 1-5"    # 17:05 – chốt số liệu cuối ngày
   workflow_dispatch:
     inputs:
       demo:

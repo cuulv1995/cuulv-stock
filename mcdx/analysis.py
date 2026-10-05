@@ -35,7 +35,10 @@ def build_frames(prices: pd.DataFrame, symbols: list[str]):
     num = ["open", "high", "low", "close", "volume", "value", "fnet"]
     px[num] = px[num].apply(pd.to_numeric, errors="coerce")
     idx_dates = px.loc[px["symbol"] == INDEX, "date"]
-    dates = pd.Index(sorted(idx_dates.unique() if len(idx_dates) > 100 else px["date"].unique()))
+    cnt = px[px["symbol"] != INDEX].groupby("date")["symbol"].nunique()
+    busy = set(cnt[cnt >= 0.5 * cnt.max()].index) if len(cnt) else set()
+    # Phiên chính thức theo VN-Index; thêm phiên đa số mã đã có giá (VD giữa phiên khi chỉ số chưa có nến hôm nay)
+    dates = pd.Index(sorted((set(idx_dates.unique()) | busy) if len(idx_dates) > 100 else px["date"].unique()))
     F = {c: wide(px, c, dates) for c in ["open", "high", "low", "close", "volume", "value", "fnet"]}
     for c in ["open", "high", "low", "close"]:
         F[c] = F[c].ffill()

@@ -343,7 +343,8 @@ function niceTicks(lo,hi,n){const span=hi-lo||1,s0=span/n,mag=Math.pow(10,Math.f
 /* header */
 const chips=[`<span class="chip num">Phiên ${fullD(D.date)}</span>`,`<span class="chip">Nguồn: ${D.source}</span>`,`<span class="chip">Cập nhật ${D.generated_at}</span>`];
 if(D.demo)chips.push(`<span class="chip warn"><span class="dot"></span>Dữ liệu giả lập</span>`);
-if(!D.complete&&!D.demo)chips.push(`<span class="chip warn"><span class="dot"></span>Chưa có dữ liệu phiên hôm nay, đang hiển thị phiên ${fullD(D.date)}</span>`);
+if(D.intraday)chips.push(`<span class="chip warn"><span class="dot"></span>Số liệu giữa phiên (cập nhật ${D.generated_at.slice(0,5)}), sẽ chốt lúc 17:05</span>`);
+else if(!D.complete&&!D.demo)chips.push(`<span class="chip warn"><span class="dot"></span>Chưa có dữ liệu phiên hôm nay, đang hiển thị phiên ${fullD(D.date)}</span>`);
 $("session").innerHTML=chips.join("");
 
 /* regime */
