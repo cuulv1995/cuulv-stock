@@ -242,7 +242,6 @@
   "PGC",
   "PHC",
   "PIT",
-  "PLP",
   "PMG",
   "PPC",
   "PTB",
@@ -296,7 +295,6 @@
   "TRC",
   "TSC",
   "TTA",
-  "TTF",
   "TV2",
   "TVB",
   "TVS",
@@ -309,7 +307,6 @@
   "VNL",
   "VNS",
   "VOS",
-  "VPG",
   "VPH",
   "VPS",
   "VRC",
@@ -320,6 +317,6 @@
   "YBM",
   "YEG"
  ],
- "updated": "2026-10-05",
+ "updated": "2026-10-12",
  "source": "vnstock (KBS)"
 }
