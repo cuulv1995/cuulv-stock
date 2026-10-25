@@ -279,6 +279,12 @@ footer{font-size:12px;color:var(--ink-3);line-height:1.6;max-width:80ch}
     <p class="note">Banker &gt; 0 và Banker ≥ MA10 liên tục từ <span id="susMin">3</span> phiên, giá trên MA20; loại mã đã tăng quá 25% trong chuỗi. Xếp theo số phiên × Banker trung bình. Nhãn "Tăng nóng" khi giá cao hơn MA20 trên 10%.</p>
   </section>
 
+  <section class="panel" aria-labelledby="hQual" id="pQual">
+    <div class="panel-head"><h2 id="hQual">Top 10 doanh nghiệp tốt để làm cổ đông</h2><span class="faint small" id="cQual"></span></div>
+    <div class="tbl-wrap"><table><thead><tr><th class="l">#</th><th class="l">Mã</th><th>Điểm DN</th><th>Cơ bản</th><th>ROE</th><th>LNST cùng kỳ</th><th>P/E · ngành</th><th>Cổ tức</th><th>Giá · %</th><th>Vùng mua</th><th class="l">Thời điểm</th></tr></thead><tbody id="tQual"></tbody></table></div>
+    <p class="note">Danh sách cho nhà đầu tư nắm giữ dài hạn, khác các bảng dòng tiền ở trên. Điều kiện: đã có báo cáo tài chính, đạt ≥ 6/10 tiêu chí cơ bản, ROE ≥ 12%, lợi nhuận không giảm quá 10% so với cùng kỳ, không có quý lỗ trong 4 quý gần nhất, GTGD TB20 ≥ 5 tỷ. Điểm DN 0–100 = cơ bản 30 + ROE 20 + tăng trưởng lợi nhuận 15 + định giá so với ngành 20 + cổ tức 5 + xu hướng dài hạn (trên MA200, MA200 đi lên) 10. Lợi nhuận tăng đột biến trên 150% chỉ được nửa điểm tăng trưởng và định giá. Cột "Thời điểm" là kết luận của bản phân tích: doanh nghiệp tốt vẫn nên chờ giá về vùng mua.</p>
+  </section>
+
   <div class="grid-2">
     <section class="panel" aria-labelledby="hExit">
       <div class="panel-head"><h2 id="hExit">Cảnh báo thoát · mã đang giữ</h2></div>
@@ -434,6 +440,20 @@ $("tSus").innerHTML=D.lists.sustain.slice(0,10).map((s,i)=>{const x=R[s];return 
   <td class="${cls(x.streak_gain)}">${sgn(x.streak_gain,f1)}%</td><td>${sgn(x.ext,f1)}%</td><td>${f0(x.rs)}</td>
   <td class="${cls(x.f5)}">${sgn(x.f5,f1)}</td><td class="l">${spark(s,120)}</td></tr>`}).join("")||`<tr><td colspan="12" class="empty">Chưa có mã duy trì đủ ${SUS} phiên.</td></tr>`;
 
+/* doanh nghiệp tốt */
+(()=>{const Q=D.lists.quality||[],n=D.lists.quality_n||{};
+  if(!D.has_analysis){$("pQual").hidden=true;return}
+  $("cQual").textContent=`${n.eligible||0} mã đạt trong ${n.with_fund||0} mã đã có báo cáo tài chính`;
+  const vt={good:"good",warn:"hotx",bad:""};
+  $("tQual").innerHTML=Q.map((q,i)=>{const x=R[q.sym];return `<tr class="click" tabindex="0" data-sym="${q.sym}">
+   <td class="l rank">${i+1}</td><td class="l sym">${heart(q.sym)}${q.sym}${q.spike?' <span class="tag hotx" title="Lợi nhuận tăng trên 150% so với cùng kỳ, thường do nền so sánh thấp">Đột biến</span>':''}<small>${x.sector}</small></td>
+   <td><div class="score">${f0(q.q)}<span class="bar"><i style="width:${q.q}%"></i></span></div></td>
+   <td>${q.fs}/10</td><td>${f1(q.roe)}%</td><td class="${cls(q.np)}">${q.spike?"&gt;150%":sgn(q.np,f1)+"%"}</td>
+   <td>${f1(q.pe)}<small class="chg faint">${q.pe_med?"ngành "+f1(q.pe_med):"&nbsp;"}</small></td><td>${q.div?f1(q.div)+"%":"–"}</td>${priceCell(x)}
+   <td>${price(q.zone[0])}–${price(q.zone[1])}${q.in_zone?'<small class="chg"><span class="tag good">Trong vùng</span></small>':""}</td>
+   <td class="l"><span class="tag ${vt[q.tone]}">${q.verdict}</span></td></tr>`}).join("")
+   ||`<tr><td colspan="11" class="empty">Chưa có mã đạt điều kiện. Báo cáo tài chính đang được tải dần qua các lần cập nhật.</td></tr>`})();
+
 /* exits */
 const SN={exit:"Thoát",watch:"Theo dõi",hold:"Giữ",unknown:"Không có dữ liệu"};
 $("tExit").innerHTML=D.exits.length?D.exits.map(e=>`<tr ${R[e.sym]?`class="click" tabindex="0" data-sym="${e.sym}"`:""}>
@@ -565,7 +585,7 @@ function renderAnalysis(a){
   const sc=(x,n)=>x==null?"–":`${x}/10`;
   const head=`<div class="ana-head">
     <div class="vbox ${v.tone}"><span class="eyebrow">Kết luận · ${a.name?a.name:a.sym}</span><span class="vl">${v.label}</span><span class="small">${v.why}.</span>
-      <span class="small muted">Thị trường: ${a.regime}. Giá ${price(a.price)} (${pctS(a.chg)}).</span></div>
+      <span class="small muted">Thị trường: ${a.regime}. Giá ${price(a.price)} (${pctS(a.chg)}).${a.scores.quality!=null?` Điểm doanh nghiệp ${a.scores.quality}/100.`:""}</span></div>
     <div class="kgrid">
       <div class="kv"><span class="k">Thời điểm</span><span class="v">${sc(a.scores.timing)}</span><span class="s">kỹ thuật + dòng tiền</span></div>
       <div class="kv"><span class="k">Cơ bản</span><span class="v">${sc(a.scores.fund)}</span><span class="s">${f.has?`${a.scores.fund_n} tiêu chí đánh giá được`:"chưa có BCTC"}</span></div>

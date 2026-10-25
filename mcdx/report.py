@@ -415,3 +415,44 @@ def build(sym: str, frames: dict, row: dict, checks: list, fund_rec: dict | None
                  "value20": _f(row.get("value20"), 1)},
         "strengths": strengths[:8], "weaknesses": weaknesses[:8], "plan": plan, "regime": regime["label"],
     }
+
+
+# ---------------------------------------------------------------- doanh nghiệp tốt để nắm giữ
+def quality(a: dict, liquid: bool) -> dict | None:
+    """Điểm doanh nghiệp 0–100 cho nhà đầu tư nắm giữ dài hạn: chất lượng lợi nhuận, tăng trưởng, định giá,
+    cổ tức và xu hướng giá dài hạn. Chỉ xét mã đã có BCTC, đủ thanh khoản và vượt các ngưỡng tối thiểu."""
+    f, t = a.get("fund") or {}, a.get("tech") or {}
+    if not f.get("has") or not liquid:
+        return None
+    fs, n, roe, g, pe = f.get("score"), f.get("n_eval") or 0, f.get("roe"), f.get("np_yoy"), f.get("pe_now")
+    if fs is None or n < 6 or fs < 6 or roe is None or roe < 12 or g is None or g < -10 or not pe or pe <= 0:
+        return None
+    qn = [q.get("np") for q in f.get("quarters") or [] if q.get("np") is not None]
+    if any(x <= 0 for x in qn):
+        return None  # có quý lỗ trong 4 quý gần nhất: chưa đủ ổn định để nắm giữ dài hạn
+    spike = g > 150  # tăng trưởng đột biến thường do nền so sánh thấp hoặc lãi bất thường
+    pe_med = (f.get("peers") or {}).get("pe")
+    div = (f.get("ratios") or {}).get("div_yield")
+    clamp = lambda x: max(0.0, min(1.0, x))  # noqa: E731
+    p_fund = fs * 3
+    p_roe = clamp(roe / 30) * 20
+    p_g = 8 if spike else clamp(g / 40) * 15
+    p_val = (clamp((1.3 - pe / pe_med) / 0.8) if pe_med else clamp((20 - pe) / 12)) * 15
+    p_val += 5 if f.get("peg") is not None and f["peg"] < 1 else 0
+    if spike:
+        p_val *= 0.5  # EPS 4 quý bị đẩy lên bởi lãi đột biến nên P/E thấp chưa phản ánh đúng định giá
+    p_div = 5 if div and div >= 3 else 3 if div and div > 0 else 0
+    above200 = t.get("ma200") is not None and t["price"] > t["ma200"]
+    p_tr = (7 if above200 else 0) + (3 if t.get("ma200_up") else 0)
+    q = round(p_fund + p_roe + p_g + p_val + p_div + p_tr)
+    why = [f"ROE {_vn(roe)}%", "LNST tăng đột biến (nền thấp)" if spike else f"LNST {'+' if g > 0 else ''}{_vn(g)}%",
+           f"P/E {_vn(pe)}" + (f" (ngành {_vn(pe_med)})" if pe_med else "")]
+    if div:
+        why.append(f"cổ tức {_vn(div, 1)}%")
+    if not above200 and t.get("ma200"):
+        why.append("giá dưới MA200")
+    return {"sym": a["sym"], "q": q, "fs": fs, "roe": roe, "np": g, "pe": pe, "pe_med": pe_med, "div": div,
+            "zone": a["plan"]["zone"], "in_zone": a["plan"]["in_zone"], "verdict": a["verdict"]["label"],
+            "tone": a["verdict"]["tone"], "above200": above200, "spike": spike, "why": ", ".join(why),
+            "parts": {"fund": round(p_fund), "roe": round(p_roe), "growth": round(p_g), "value": round(p_val),
+                      "div": p_div, "trend": p_tr}}

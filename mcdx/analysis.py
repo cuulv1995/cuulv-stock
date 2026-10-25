@@ -247,7 +247,7 @@ def compute(prices: pd.DataFrame, universe: dict[str, list[str]], sectors: dict[
     names = names or {}
     regime_info = {"state": state, "label": REG[state][0]}
     peers_all = rpt.sector_peers(fund, sec_of, {s: float(C[s].iloc[t]) for s in symbols})
-    analyses = {}
+    analyses, quality = {}, []
     for s in symbols:
         try:
             row = R.loc[s].to_dict()
@@ -255,6 +255,10 @@ def compute(prices: pd.DataFrame, universe: dict[str, list[str]], sectors: dict[
             a = rpt.build(s, {"close": C[s], "high": H[s], "low": Lo[s], "volume": V[s]}, row, checks.get(s, []),
                           fund.get(s), peers_all.get(sec_of[s], {}), regime_info, names.get(s),
                           {"f5": row.get("f5"), "f20": None if pd.isna(f20) else float(f20) / 1e9})
+            qa = rpt.quality(a, bool(row.get("liquid")))
+            if qa:
+                a["scores"]["quality"] = qa["q"]
+                quality.append(qa)
             analyses[s] = a
             R.loc[s, "fscore"] = a["scores"]["fund"] if a["scores"]["fund"] is not None else np.nan
             R.loc[s, "verdict"] = a["verdict"]["label"]
@@ -291,6 +295,8 @@ def compute(prices: pd.DataFrame, universe: dict[str, list[str]], sectors: dict[
         "rows": {s: rec(R.loc[s]) for s in symbols},
         "lists": {"new": {b: list(new_lists[b].sym) for b in universe},
                   "sustain": list(sus.sym),
+                  "quality": sorted(quality, key=lambda x: -x["q"])[:10],
+                  "quality_n": {"eligible": len(quality), "with_fund": sum(1 for a in analyses.values() if a["fund"].get("has"))},
                   "top5": [{**rec(r), "parts": {k: round(float(r["p_" + k]), 1) for k in ["mcdx", "rs", "sector", "volume", "base"]}} for _, r in top5.iterrows()],
                   "out": list(R[R.liquid & (((b5.iloc[t].reindex(R.index) >= 5) & (R.d5 <= -5)) | ((R.b1 > 0.5) & (R.b <= 0.5)))].sym)},
         "exits": exits,

@@ -121,6 +121,7 @@ def run_case():
     assert p["stop"] < p["zone"][0] <= p["zone"][1] < p["t1"] < p["t2"], p
     assert a["verdict"]["label"] and a["fund"] == {"has": False}
     assert '"has_analysis":true' in html
+    assert '"quality":[]' in html  # chưa có BCTC thì danh sách doanh nghiệp tốt rỗng
     sys.path.remove(str(tmp))
     return tmp, dict(CALLS)
 
