@@ -73,6 +73,7 @@ FIELDS = {
         ("ldr", ["outstanding_loans_customer_deposits"], []),
         ("loan_growth", [], ["tang truong du no cho vay"]),
         ("deposit_growth", [], ["tang truong huy dong von"]),
+        ("nii_growth", [], ["tang truong thu nhap lai thuan"]),
         ("npl", [], ["ty le no xau", "no xau/"]),
         ("llr", ["loan_loss_provision_ratio"], []),
     ],
@@ -95,7 +96,7 @@ def _num(v):
 
 def period_cols(df: pd.DataFrame) -> list[str]:
     """Các cột kỳ báo cáo (VD '2026-Q2'), sắp từ cũ đến mới."""
-    cols = [c for c in df.columns if re.match(r"^\d{4}(-Q\d)?(_\d+)?$", str(c))]
+    cols = [c for c in df.columns if re.match(r"^\d{4}(-Q\d|-N\w*)?(_\d+)?$", str(c))]
     def key(c):
         m = re.match(r"^(\d{4})(?:-Q(\d))?", str(c))
         return (int(m.group(1)), int(m.group(2) or 0))
@@ -173,6 +174,22 @@ class FundSource:
         time.sleep(self.pause * limit)
         return df
 
+    def _ratio_latest(self, fin):
+        """Bảng chỉ số của kỳ mới nhất, lấy 1 kỳ/lần (lấy 4 kỳ một lúc thì KBS gán nhầm kỳ)."""
+        data = fin._fetch_financial_data(report_type="CSTC", period_type=2, page=1, page_size=1)
+        time.sleep(self.pause)
+        if not data or not data.get("Head"):
+            return None
+        content = data.get("Content", {}) or {}
+        rows = [r for k, v in content.items() if "Nhóm chỉ số" in k for r in (v or [])]
+        if not rows:
+            return None
+        data["Content"]["Financial Ratios Combined"] = rows
+        df = fin._parse_financial_response(data, "Financial Ratios Combined")
+        if df is not None and len(df) and getattr(fin, "standardize_columns", False):
+            df = fin._apply_schema_standardization(df, "financial_ratios")
+        return df
+
     def _try(self, label, fn, errors):
         for attempt in range(2):
             try:
@@ -185,11 +202,10 @@ class FundSource:
     def raw(self, symbol: str, errors: dict | None = None) -> dict:
         errors = {} if errors is None else errors
         fin = self.Finance(symbol, period="quarter")
+        # Dữ liệu năm và lưu chuyển tiền tệ của KBS bị lẫn số giữa các kỳ khi lấy theo trang → không dùng.
         return {
-            "income": self._try("income_q", lambda: self._series(fin, "KQKD", 2, 5, "income_statement"), errors),
-            "income_y": self._try("income_y", lambda: self._series(fin, "KQKD", 1, 3, "income_statement"), errors),
-            "cash": self._try("cash_y", lambda: self._series(fin, "LCTT", 1, 1, "cash_flow"), errors),
-            "ratio": self._try("ratio", lambda: self._call(lambda: fin.ratio(period="quarter")), errors),
+            "income": self._try("income_q", lambda: self._series(fin, "KQKD", 2, 4, "income_statement"), errors),
+            "ratio": self._try("ratio", lambda: self._ratio_latest(fin), errors),
         }
 
     def fetch(self, symbol: str, raw: dict | None = None) -> dict | None:
@@ -197,8 +213,6 @@ class FundSource:
         if all(v is None or len(v) == 0 for v in raw.values()):
             return None
         rec = {"income": extract(raw.get("income"), FIELDS["income"]),
-               "income_y": extract(raw.get("income_y"), FIELDS["income"]),
-               "cash": extract(raw.get("cash"), FIELDS["cash"]),
                "ratio": extract(raw.get("ratio"), FIELDS["ratio"])}
         units = {}
         for k, df in raw.items():
