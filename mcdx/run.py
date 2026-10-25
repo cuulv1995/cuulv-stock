@@ -50,6 +50,8 @@ def refresh_universe(client, today: dt.date) -> dict:
     cur = store.read_json(store.UNIVERSE, {})
     fresh = cur.get("updated") and (today - dt.date.fromisoformat(cur["updated"])).days < 7
     if fresh and all(k in cur for k in BASKETS):
+        if hasattr(client, "names") and not (store.DATA / "names.json").exists():
+            store.write_json(store.DATA / "names.json", client.names())  # rỗng nếu lỗi: thử lại khi làm mới rổ hằng tuần
         return cur
     uni = {}
     try:
@@ -199,11 +201,11 @@ def main():
         minutes = float(os.environ.get("FUND_MINUTES", "15") or 0)
         fund = fundamentals.load_cache()
         if minutes > 0 and not intraday:
-            per_symbol = 8 if os.environ.get("VNSTOCK_API_KEY") else 22  # giây/mã ước tính
-            budget = int(minutes * 60 / per_symbol)
+            per_symbol = 15 if os.environ.get("VNSTOCK_API_KEY") else 50  # giây/mã thực tế (gồm chờ giới hạn lượt gọi)
+            budget = max(1, int(minutes * 60 / per_symbol))
             prio = [s for b in ("VN30", "MID", "SMALL") for s in uni.get(b, [])]
             signal = store.read_json(store.DATA / "signal_syms.json", [])
-            fund = fundamentals.refresh(prio, signal, budget, today)
+            fund = fundamentals.refresh(prio, signal, budget, today, seconds=minutes * 60)
     report = compute(prices, uni, store.load_sectors(), store.load_holdings(), fund=fund,
                      names=store.read_json(store.DATA / "names.json", {}))
     # mã đang có tín hiệu → ưu tiên làm mới báo cáo tài chính ở lần chạy sau

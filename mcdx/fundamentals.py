@@ -227,8 +227,10 @@ def load_cache() -> dict:
     return store.read_json(CACHE, {})
 
 
-def refresh(symbols: list[str], priority: list[str], budget: int, today: dt.date) -> dict:
-    """Làm mới tối đa `budget` mã. Trả về cache đầy đủ."""
+def refresh(symbols: list[str], priority: list[str], budget: int, today: dt.date, seconds: float | None = None) -> dict:
+    """Làm mới tối đa `budget` mã và dừng khi hết `seconds` giây. Trả về cache đầy đủ."""
+    import time
+    t0 = time.monotonic()
     cache = load_cache()
     if budget <= 0:
         return cache
@@ -248,6 +250,9 @@ def refresh(symbols: list[str], priority: list[str], budget: int, today: dt.date
     if todo:
         log.info("Báo cáo tài chính: làm mới %d/%d mã đến hạn", len(todo), len(due))
     for i, s in enumerate(todo, 1):
+        if seconds and time.monotonic() - t0 > seconds:
+            log.info("Báo cáo tài chính: hết thời gian, đã làm mới %d mã", i - 1)
+            break
         rec = src.fetch(s)
         if rec:
             cache[s] = rec
