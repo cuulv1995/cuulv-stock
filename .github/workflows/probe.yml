@@ -1,0 +1,39 @@
+name: Thăm dò báo cáo tài chính
+
+on:
+  workflow_dispatch:
+    inputs:
+      symbols:
+        description: "Danh sách mã, cách nhau bởi dấu phẩy"
+        default: "FPT,VCB,HAH,SSI"
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Cài thư viện
+        env:
+          VNSTOCK_DISABLE_AGENT_SETUP: "1"
+        run: |
+          pip install -r requirements.txt
+          pip install --extra-index-url https://vnstocks.com/api/simple vnstock vnai
+      - name: Thăm dò
+        env:
+          VNSTOCK_API_KEY: ${{ secrets.VNSTOCK_API_KEY }}
+          VNSTOCK_DISABLE_AGENT_SETUP: "1"
+        run: python -m mcdx.fundamentals --probe "${{ inputs.symbols }}"
+      - name: Lưu kết quả
+        run: |
+          git config user.name "mcdx-bot"
+          git config user.email "mcdx-bot@users.noreply.github.com"
+          git add data/debug
+          git commit -m "Kết quả thăm dò báo cáo tài chính" || echo "Không có thay đổi"
+          git pull --rebase -q origin main && git push
