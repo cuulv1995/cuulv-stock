@@ -27,57 +27,61 @@ CACHE = store.DATA / "fundamentals.json"
 REFRESH_DAYS = 30
 QUARTERS = 8
 
-# Trường cần lấy: (khóa chuẩn, item_id có thể gặp, từ khóa tên tiếng Việt)
+# Trường cần lấy: (khóa chuẩn, tiền tố item_id của KBS, từ khóa tên tiếng Việt). Tên được ưu tiên khi có.
 FIELDS = {
     "income": [
-        ("revenue", ["revenue", "net_revenue", "operating_income"],
-         ["doanh thu thuan", "tong thu nhap hoat dong", "thu nhap lai thuan", "doanh thu hoat dong"]),
+        ("revenue", [], ["doanh thu thuan", "thu nhap lai thuan"]),
         ("gross_profit", ["gross_profit"], ["loi nhuan gop"]),
-        ("operating_profit", ["operating_profit"], ["loi nhuan thuan tu hoat dong kinh doanh", "loi nhuan tu hoat dong kinh doanh"]),
-        ("pbt", ["profit_before_tax"], ["tong loi nhuan ke toan truoc thue", "loi nhuan truoc thue"]),
-        ("net_profit", ["net_profit", "net_profit_after_tax"],
-         ["loi nhuan sau thue cua co dong cua cong ty me", "loi nhuan sau thue cua chu so huu", "loi nhuan sau thue thu nhap doanh nghiep", "loi nhuan sau thue"]),
-        ("eps", ["eps"], ["lai co ban tren co phieu", "eps"]),
-    ],
-    "balance": [
-        ("total_assets", ["total_assets", "assets"], ["tong cong tai san", "tong tai san"]),
-        ("equity", ["equity", "owners_equity"], ["von chu so huu"]),
-        ("liabilities", ["total_liabilities", "liabilities"], ["no phai tra"]),
-        ("current_assets", ["current_assets", "short_term_assets"], ["tai san ngan han"]),
-        ("current_liabilities", ["current_liabilities", "short_term_liabilities"], ["no ngan han"]),
-        ("cash", [], ["tien va cac khoan tuong duong tien"]),
-        ("short_debt", [], ["vay va no thue tai chinh ngan han", "vay ngan han"]),
-        ("long_debt", [], ["vay va no thue tai chinh dai han", "vay dai han"]),
-        ("inventory", [], ["hang ton kho"]),
-        ("charter_capital", ["charter_capital", "share_capital"], ["von gop cua chu so huu", "von dieu le"]),
+        ("operating_profit", ["operating_profit_before_provision", "operating_profit"],
+         ["loi nhuan thuan tu hoat dong kinh doanh"]),
+        ("pbt", ["profit_before_tax"], ["tong loi nhuan ke toan truoc thue", "tong loi nhuan truoc thue"]),
+        ("net_profit", ["profit_after_tax_for_shareholders", "net_profit_atttributable", "net_profit_attributable"],
+         ["loi nhuan sau thue cua co dong cua cong ty me", "loi nhuan sau thue cua co dong cua ngan hang me"]),
+        ("net_profit_total", ["net_profit"], ["loi nhuan sau thue"]),
     ],
     "cash": [
-        ("cfo", ["operating_cash_flow", "net_cash_flows_from_operating_activities"],
-         ["luu chuyen tien thuan tu hoat dong kinh doanh", "luu chuyen tien te rong tu cac hoat dong san xuat kinh doanh",
-          "luu chuyen tien thuan tu cac hoat dong kinh doanh"]),
-        ("capex", [], ["tien chi de mua sam, xay dung tscd", "mua sam, xay dung tai san co dinh", "tien chi mua sam"]),
+        ("cfo", ["operating_cash_flow"], ["luu chuyen tien thuan tu hoat dong kinh doanh"]),
+        ("capex", ["payment_for_fixed_assets", "purchase_of_fixed_assets"], ["tien chi de mua sam, xay dung tscd", "mua sam tai san co dinh"]),
     ],
     "ratio": [
-        ("pe", ["pe_ratio", "p_e"], ["p/e"]),
-        ("pb", ["pb_ratio", "p_b"], ["p/b"]),
-        ("roe", ["roe"], ["roe", "ty suat loi nhuan tren von chu so huu"]),
-        ("roa", ["roa"], ["roa", "ty suat loi nhuan tren tong tai san"]),
-        ("gross_margin", ["gross_margin", "gross_profit_margin"], ["bien loi nhuan gop", "ty suat loi nhuan gop"]),
-        ("net_margin", ["net_margin", "net_profit_margin"], ["bien loi nhuan rong", "ty suat loi nhuan rong", "bien loi nhuan sau thue"]),
-        ("de", ["debt_to_equity", "debt_equity"], ["no/von chu so huu", "no phai tra/von chu so huu"]),
-        ("current_ratio", ["current_ratio"], ["thanh toan hien hanh", "kha nang thanh toan ngan han"]),
-        ("bvps", ["book_value_per_share"], ["gia tri so sach", "bvps"]),
-        ("eps_ttm", ["earnings_per_share"], ["eps 4 quy", "thu nhap tren moi co phan"]),
-        ("npl", [], ["no xau", "ty le no xau"]),
-        ("nim", [], ["nim", "bien lai thuan"]),
-        ("casa", [], ["casa", "tien gui khong ky han"]),
+        ("eps_ttm", ["trailing_eps"], ["thu nhap tren moi co phan cua 4 quy"]),
+        ("bvps", ["book_value_per_share"], ["gia tri so sach cua co phieu"]),
+        ("pe", ["pe_ratio"], []),
+        ("pb", ["pb_ratio"], []),
+        ("ps", ["ps_ratio"], []),
+        ("div_yield", ["dividend_yield"], ["ty suat co tuc"]),
+        ("beta", ["beta"], []),
+        ("roe", ["roe_trailling", "roe_trailing"], ["roe binh quan 4 quy"]),
+        ("roa", ["roa_trailling", "roa_trailing"], ["roa binh quan 4 quy"]),
+        ("gross_margin", ["gross_margin"], ["ty suat loi nhuan gop bien"]),
+        ("net_margin", ["net_margin"], ["ty suat sinh loi tren doanh thu thuan"]),
+        ("ebit_margin", ["ebit_margin"], []),
+        ("rev_growth", [], ["tang truong doanh thu thuan"]),
+        ("np_growth", [], ["tang truong loi nhuan sau thue cua cd"]),
+        ("pbt_growth", [], ["tang truong loi nhuan truoc thue"]),
+        ("equity_growth", [], ["tang truong von chu so huu"]),
+        ("current_ratio", ["short_term_ratio"], ["ty so thanh toan hien hanh"]),
+        ("quick_ratio", ["quick_ratio"], ["ty so thanh toan nhanh"]),
+        ("interest_cover", ["interest_coverage"], ["kha nang thanh toan lai vay"]),
+        ("debt_assets", ["debt_to_assets"], ["ty so no vay tren tong tai san"]),
+        ("liab_assets", ["liabilities_to_assets"], ["ty so no tren tong tai san"]),
+        ("equity_assets", ["equity_to_assets", "equity_total_assets"], ["ty so von chu so huu tren tong tai san", "von chu so huu/tong tai san"]),
+        ("dso", ["days_of_sales_outstanding"], []),
+        ("dio", ["days_of_inventory_on_hand"], []),
+        ("nim", ["net_interest_margin"], ["ty le thu nhap lai thuan"]),
+        ("cir", ["cost_income_ratio"], []),
+        ("ldr", ["outstanding_loans_customer_deposits"], []),
+        ("loan_growth", [], ["tang truong du no cho vay"]),
+        ("deposit_growth", [], ["tang truong huy dong von"]),
+        ("npl", [], ["ty le no xau", "no xau/"]),
+        ("llr", ["loan_loss_provision_ratio"], []),
     ],
 }
 
 
 def norm(s) -> str:
-    s = unicodedata.normalize("NFD", str(s or "")).encode("ascii", "ignore").decode().lower()
-    s = s.replace("đ", "d")
+    s = str(s or "").replace("Đ", "D").replace("đ", "d").replace("Ð", "D")
+    s = unicodedata.normalize("NFD", s).encode("ascii", "ignore").decode().lower()
     return re.sub(r"\s+", " ", re.sub(r"^[\divxlc]+[\.\)]\s*|^[-–\s]+", "", s)).strip()
 
 
@@ -99,32 +103,40 @@ def period_cols(df: pd.DataFrame) -> list[str]:
 
 
 def extract(df: pd.DataFrame | None, fields) -> dict:
-    """Trả {khóa: {kỳ: giá trị}} bằng cách khớp item_id trước, sau đó khớp tên tiếng Việt."""
+    """Trả {khóa: {kỳ: giá trị}}: khớp tên tiếng Việt trước (chính xác hơn khi item_id trùng), rồi tiền tố item_id."""
     out: dict = {}
     if df is None or len(df) == 0:
         return out
     cols = period_cols(df)
     if not cols:
         return out
+    if "row_number" in df.columns:
+        df = df.assign(_rn=pd.to_numeric(df["row_number"], errors="coerce")).sort_values("_rn")
     ids = df["item_id"].astype(str).str.lower().tolist() if "item_id" in df.columns else [""] * len(df)
     names = [norm(x) for x in (df["item"] if "item" in df.columns else df.iloc[:, 0])]
     used = set()
+
+    def has_data(i):
+        return any(_num(df.iloc[i][c]) is not None for c in cols)
+
     for key, id_opts, name_opts in fields:
-        idx = next((i for i, x in enumerate(ids) if x in id_opts and i not in used), None)
+        idx = None
+        for opt in name_opts:
+            idx = next((i for i, n in enumerate(names) if n.startswith(opt) and i not in used and has_data(i)), None)
+            if idx is None:
+                idx = next((i for i, n in enumerate(names) if opt in n and i not in used and has_data(i)), None)
+            if idx is not None:
+                break
         if idx is None:
-            for opt in name_opts:  # khớp tên bắt đầu bằng từ khóa trước, rồi chứa từ khóa
-                idx = next((i for i, n in enumerate(names) if n.startswith(opt) and i not in used), None)
-                if idx is None:
-                    idx = next((i for i, n in enumerate(names) if opt in n and i not in used), None)
+            for opt in id_opts:
+                idx = next((i for i, x in enumerate(ids) if x.startswith(opt) and i not in used and has_data(i)), None)
                 if idx is not None:
                     break
         if idx is None:
             continue
         used.add(idx)
         row = df.iloc[idx]
-        vals = {str(c): _num(row[c]) for c in cols}
-        if any(v is not None for v in vals.values()):
-            out[key] = vals
+        out[key] = {str(c): _num(row[c]) for c in cols}
     return out
 
 
@@ -151,41 +163,43 @@ class FundSource:
         log.warning("Báo cáo tài chính lỗi: %s", err)
         return None
 
-    def _statement(self, fin, method: str, report_type: str):
-        """Lấy QUARTERS kỳ nếu được (hàm nội bộ có tham số limit), không thì mặc định 4 kỳ."""
-        try:
-            from vnstock.explorer.kbs import financial as kf
-            aliases = getattr(kf, "_FINANCIAL_REPORT_KEY_ALIASES", {})
-            key = {"income_statement": "KQKD", "balance_sheet": "CDKT", "cash_flow": "LCTT"}[method]
-            if hasattr(fin, "_fetch_series_data") and key in aliases:
-                df = self._call(lambda: fin._fetch_series_data(report_type=key, period_type=2, report_key=aliases[key],
-                                                               limit=QUARTERS))
-                if df is not None and len(df):
-                    if getattr(fin, "standardize_columns", False):
-                        df = fin._apply_schema_standardization(df, method)
-                    return df
-        except Exception as e:
-            log.debug("Không dùng được hàm nội bộ (%s), lấy mặc định.", e)
-        return self._call(lambda: getattr(fin, method)(period="quarter"))
+    def _series(self, fin, key: str, period_type: int, limit: int, method: str):
+        """Gọi trực tiếp hàm lấy nhiều kỳ của vnstock với số kỳ mong muốn (mỗi kỳ = 1 lần gọi KBS)."""
+        from vnstock.explorer.kbs import financial as kf
+        aliases = getattr(kf, "_FINANCIAL_REPORT_KEY_ALIASES")
+        df = fin._fetch_series_data(report_type=key, period_type=period_type, report_key=aliases[key], limit=limit)
+        if df is not None and len(df) and getattr(fin, "standardize_columns", False):
+            df = fin._apply_schema_standardization(df, method)
+        time.sleep(self.pause * limit)
+        return df
 
-    def raw(self, symbol: str) -> dict:
+    def _try(self, label, fn, errors):
+        for attempt in range(2):
+            try:
+                return fn()
+            except Exception as e:  # noqa: PERF203
+                errors[label] = f"{type(e).__name__}: {e}"[:300]
+                time.sleep(10 * (attempt + 1))
+        return None
+
+    def raw(self, symbol: str, errors: dict | None = None) -> dict:
+        errors = {} if errors is None else errors
         fin = self.Finance(symbol, period="quarter")
-        try:
-            fin.limit = QUARTERS
-        except Exception:
-            pass
         return {
-            "income": self._statement(fin, "income_statement", "income_statement"),
-            "balance": self._statement(fin, "balance_sheet", "balance_sheet"),
-            "cash": self._statement(fin, "cash_flow", "cash_flow"),
-            "ratio": self._call(lambda: fin.ratio(period="quarter")),
+            "income": self._try("income_q", lambda: self._series(fin, "KQKD", 2, 5, "income_statement"), errors),
+            "income_y": self._try("income_y", lambda: self._series(fin, "KQKD", 1, 3, "income_statement"), errors),
+            "cash": self._try("cash_y", lambda: self._series(fin, "LCTT", 1, 1, "cash_flow"), errors),
+            "ratio": self._try("ratio", lambda: self._call(lambda: fin.ratio(period="quarter")), errors),
         }
 
-    def fetch(self, symbol: str) -> dict | None:
-        raw = self.raw(symbol)
+    def fetch(self, symbol: str, raw: dict | None = None) -> dict | None:
+        raw = raw or self.raw(symbol)
         if all(v is None or len(v) == 0 for v in raw.values()):
             return None
-        rec = {k: extract(raw[k], FIELDS[k]) for k in FIELDS}
+        rec = {"income": extract(raw.get("income"), FIELDS["income"]),
+               "income_y": extract(raw.get("income_y"), FIELDS["income"]),
+               "cash": extract(raw.get("cash"), FIELDS["cash"]),
+               "ratio": extract(raw.get("ratio"), FIELDS["ratio"])}
         units = {}
         for k, df in raw.items():
             if df is not None and hasattr(df, "attrs"):
@@ -236,15 +250,17 @@ def probe(symbols: list[str]):
     src = FundSource()
     out = {}
     for s in symbols:
-        raw = src.raw(s)
-        out[s] = {}
+        errors: dict = {}
+        t0 = time.time()
+        raw = src.raw(s, errors)
+        out[s] = {"errors": errors, "seconds": round(time.time() - t0, 1)}
         for k, df in raw.items():
             if df is None:
                 out[s][k] = None
                 continue
             out[s][k] = {"columns": [str(c) for c in df.columns], "attrs": {a: str(v) for a, v in df.attrs.items()},
-                         "rows": json.loads(df.head(80).to_json(orient="records", force_ascii=False))}
-        out[s]["parsed"] = src.fetch(s)
+                         "rows": json.loads(df.to_json(orient="records", force_ascii=False))}
+        out[s]["parsed"] = src.fetch(s, raw)
     path = store.DATA / "debug" / "fund_probe.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(out, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
