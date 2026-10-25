@@ -72,6 +72,10 @@ def refresh_universe(client, today: dt.date) -> dict:
                "source": "Danh sách dự phòng (ước lượng)"}
     store.write_json(store.UNIVERSE, uni)
     log.info("Rổ: VN30 %d, VNMidCap %d, VNSmallCap %d mã (%s)", len(uni["VN30"]), len(uni["MID"]), len(uni["SMALL"]), uni["source"])
+    if hasattr(client, "names"):
+        nm = client.names()
+        if nm:
+            store.write_json(store.DATA / "names.json", nm)
     # Ngành tự động cho mã chưa có trong config/sectors.json
     if hasattr(client, "sectors"):
         auto = client.sectors()
@@ -189,7 +193,24 @@ def main():
         prices = update_prices(client, uni, today, cutoff, persist_recent=not intraday)
         uni = {b: uni[b] for b in BASKETS if uni.get(b)}
 
-    report = compute(prices, uni, store.load_sectors(), store.load_holdings())
+    fund = {}
+    if not args.demo:
+        from . import fundamentals
+        minutes = float(os.environ.get("FUND_MINUTES", "15") or 0)
+        fund = fundamentals.load_cache()
+        if minutes > 0 and not intraday:
+            per_symbol = 8 if os.environ.get("VNSTOCK_API_KEY") else 22  # giây/mã ước tính
+            budget = int(minutes * 60 / per_symbol)
+            prio = [s for b in ("VN30", "MID", "SMALL") for s in uni.get(b, [])]
+            signal = store.read_json(store.DATA / "signal_syms.json", [])
+            fund = fundamentals.refresh(prio, signal, budget, today)
+    report = compute(prices, uni, store.load_sectors(), store.load_holdings(), fund=fund,
+                     names=store.read_json(store.DATA / "names.json", {}))
+    # mã đang có tín hiệu → ưu tiên làm mới báo cáo tài chính ở lần chạy sau
+    sig = list(dict.fromkeys([t["sym"] for t in report["lists"]["top5"]] + report["lists"]["sustain"][:10]
+                             + [s for v in report["lists"]["new"].values() for s in v[:10]]))
+    if not args.demo:
+        store.write_json(store.DATA / "signal_syms.json", sig)
     latest = dt.date.fromisoformat(report["date"])
     complete = latest >= today and not intraday
     report.update({"source": source, "demo": args.demo, "generated_at": now.strftime("%H:%M %d/%m/%Y"),

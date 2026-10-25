@@ -23,6 +23,15 @@ def _clean(o):
 
 
 def build_site(report: dict) -> Path:
+    report = dict(report)
+    analyses = report.pop("analysis", {}) or {}
+    adir = SITE / "analysis"
+    adir.mkdir(parents=True, exist_ok=True)
+    for f in adir.glob("*.json"):
+        f.unlink()
+    for sym, a in analyses.items():
+        (adir / f"{sym}.json").write_text(json.dumps(_clean(a), ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    report["has_analysis"] = bool(analyses)
     data = json.dumps(_clean(report), ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
     html = TEMPLATE.read_text(encoding="utf-8").replace("/*__DATA__*/", data)
     SITE.mkdir(exist_ok=True)

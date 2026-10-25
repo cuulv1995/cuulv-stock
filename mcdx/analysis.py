@@ -46,7 +46,8 @@ def build_frames(prices: pd.DataFrame, symbols: list[str]):
     return dates, F
 
 
-def compute(prices: pd.DataFrame, universe: dict[str, list[str]], sectors: dict[str, str], holdings: list[str]) -> dict:
+def compute(prices: pd.DataFrame, universe: dict[str, list[str]], sectors: dict[str, str], holdings: list[str],
+            fund: dict | None = None, names: dict | None = None) -> dict:
     basket_of = {s: b for b, syms in universe.items() for s in syms}
     symbols = sorted(basket_of)
     dates, F = build_frames(prices, symbols)
@@ -240,6 +241,27 @@ def compute(prices: pd.DataFrame, universe: dict[str, list[str]], sectors: dict[
         perf.append(rec)
 
     # ---- chuỗi cho biểu đồ (60 phiên)
+    # ---- báo cáo phân tích từng mã (ghi thành file riêng khi dựng trang)
+    from . import report as rpt
+    fund = fund or {}
+    names = names or {}
+    regime_info = {"state": state, "label": REG[state][0]}
+    peers_all = rpt.sector_peers(fund, sec_of, {s: float(C[s].iloc[t]) for s in symbols})
+    analyses = {}
+    for s in symbols:
+        try:
+            row = R.loc[s].to_dict()
+            f20 = fnet[s].iloc[t - 19:t + 1].sum(min_count=1)
+            a = rpt.build(s, {"close": C[s], "high": H[s], "low": Lo[s], "volume": V[s]}, row, checks.get(s, []),
+                          fund.get(s), peers_all.get(sec_of[s], {}), regime_info, names.get(s),
+                          {"f5": row.get("f5"), "f20": None if pd.isna(f20) else float(f20) / 1e9})
+            analyses[s] = a
+            R.loc[s, "fscore"] = a["scores"]["fund"] if a["scores"]["fund"] is not None else np.nan
+            R.loc[s, "verdict"] = a["verdict"]["label"]
+        except Exception as e:  # một mã lỗi không làm hỏng cả báo cáo
+            import logging
+            logging.getLogger("mcdx").warning("Không phân tích được %s: %s", s, e)
+
     W = 60
     tail = slice(max(0, t - W + 1), t + 1)
     ds = [d.isoformat() for d in dates[tail]]
@@ -274,6 +296,7 @@ def compute(prices: pd.DataFrame, universe: dict[str, list[str]], sectors: dict[
         "exits": exits,
         "params": {"sustain_min": SUSTAIN_MIN_STREAK, "sustain_max_gain": SUSTAIN_MAX_GAIN},
         "checks": checks,
+        "analysis": analyses,
         "sectors": {"dates": [d.isoformat() for d in dates[max(0, t - 9):t + 1]],
                     "rows": sorted([{"sector": k, "vals": [round(float(x), 1) for x in sec_df[k].iloc[max(0, t - 9):t + 1]]} for k in sec_df.columns],
                                    key=lambda r: -r["vals"][-1])},

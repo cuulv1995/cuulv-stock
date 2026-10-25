@@ -235,6 +235,17 @@ class VnstockClient:
                 log.info("Tải từng mã %d/%d", i, len(slow))
         return rows
 
+    def names(self) -> dict[str, str]:
+        """Tên doanh nghiệp theo mã."""
+        try:
+            df = self._call(lambda: self._Listing().symbols_by_exchange())
+        except Exception as e:
+            log.warning("Không lấy được tên doanh nghiệp: %s", e)
+            return {}
+        if df is None or len(df) == 0 or "symbol" not in df.columns or "organ_name" not in df.columns:
+            return {}
+        return {str(r["symbol"]).upper(): str(r["organ_name"]).strip() for r in df.to_dict("records") if r.get("organ_name")}
+
     def sectors(self) -> dict[str, str]:
         """Ngành của từng mã theo phân loại KBS (tiếng Việt)."""
         try:

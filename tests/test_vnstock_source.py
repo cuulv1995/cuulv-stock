@@ -113,6 +113,14 @@ def run_case():
     sectors = json.loads((tmp / "data" / "sectors_auto.json").read_text())
     assert sectors.get("BFC") == "Ngành tự động"
     assert '"SMALL"' in html
+    # nút Phân tích: mỗi mã có một file phân tích với kế hoạch giao dịch hợp lệ
+    ana = sorted((tmp / "site" / "analysis").glob("*.json"))
+    assert len(ana) >= n_sym - 1, len(ana)
+    a = json.loads((tmp / "site" / "analysis" / f"{s0}.json").read_text())
+    p = a["plan"]
+    assert p["stop"] < p["zone"][0] <= p["zone"][1] < p["t1"] < p["t2"], p
+    assert a["verdict"]["label"] and a["fund"] == {"has": False}
+    assert '"has_analysis":true' in html
     sys.path.remove(str(tmp))
     return tmp, dict(CALLS)
 

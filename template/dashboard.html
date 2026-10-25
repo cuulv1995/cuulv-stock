@@ -175,6 +175,39 @@ svg text{font-family:var(--f-num);fill:var(--ink-3);font-size:10.5px}
 details.more summary{cursor:pointer;color:var(--accent);font-size:13px;font-weight:600}
 details.more summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media (max-width:640px){ .checks{grid-template-columns:minmax(0,1fr)} }
+/* phân tích */
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--surface);font-weight:600}
+.btn.primary:hover{filter:brightness(1.08);background:var(--accent)}
+.sheet-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.ana{display:flex;flex-direction:column;gap:14px}
+.ana-head{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:14px;align-items:stretch}
+.vbox{border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:6px;border:1px solid var(--line)}
+.vbox.good{background:var(--good-soft);border-color:var(--good)} .vbox.warn{background:var(--warn-soft);border-color:var(--warn)} .vbox.bad{background:var(--bad-soft);border-color:var(--bad)}
+.vbox .vl{font-size:20px;font-weight:700}
+.vbox.good .vl{color:var(--good)} .vbox.warn .vl{color:var(--warn)} .vbox.bad .vl{color:var(--bad)}
+.kgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.kv{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.kv .k{font-size:11px;color:var(--ink-3)} .kv .v{font-family:var(--f-num);font-size:15px;font-weight:500;font-variant-numeric:tabular-nums}
+.kv .s{font-size:11px;color:var(--ink-3)}
+.plan-t td,.plan-t th{white-space:normal;vertical-align:top}
+.plan-t td.pv{font-family:var(--f-num);font-weight:600;white-space:nowrap}
+.plan-t td.pl{font-family:var(--f-body);text-align:left}
+.sw{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.sw ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px;font-size:13px}
+.sw h3 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.crit-t td{white-space:normal;font-family:var(--f-body);text-align:left;vertical-align:top} .crit-t td.ic{font-weight:700;text-align:center;width:24px}
+.crit-t td.ok{color:var(--good)} .crit-t td.no{color:var(--bad)} .crit-t td.na{color:var(--ink-3)}
+.crit-t td.val{font-family:var(--f-num);white-space:nowrap}
+.levels{display:flex;flex-wrap:wrap;gap:6px}
+.levels .chip b{font-family:var(--f-num);font-weight:500}
+.range{position:relative;height:8px;background:var(--surface-2);border-radius:4px;margin:6px 0 2px}
+.range i{position:absolute;top:-3px;width:3px;height:14px;background:var(--ink);border-radius:2px}
+.rng-l{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-3);font-family:var(--f-num)}
+.ana-note{font-size:12px;color:var(--ink-3)}
+.th-m{display:none}
+@media (max-width:760px){.ana-head,.sw{grid-template-columns:minmax(0,1fr)} .kgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .th-m{display:block;margin-top:2px} .th-d{display:none} .crit-t td.val{white-space:normal;max-width:42%}
+ .plan-t tr{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start} .plan-t td:nth-child(3){grid-column:1/-1;padding-top:0;color:var(--ink-2)} .plan-t td[colspan]{grid-column:1/-1}}
 footer{font-size:12px;color:var(--ink-3);line-height:1.6;max-width:80ch}
 
 @media (max-width:1100px){ .top5{grid-template-columns:repeat(3,minmax(0,1fr))} }
@@ -493,6 +526,108 @@ $("wCopy").addEventListener("click",()=>{const code=Object.entries(W).map(([s,w]
 $("wImport").addEventListener("click",()=>{let k=0;String($("wCode").value).split(/[,\s]+/).forEach(t=>{const [s,d,p]=t.split(":");if(s&&/^\d{4}-\d{2}-\d{2}$/.test(d||"")){W[s.toUpperCase()]={d,p:+p||null};k++}});saveW();renderWatch();refreshHearts();$("wToolMsg").textContent=k?`Đã nhập ${k} mã.`:"Không đọc được mã danh sách."});
 renderWatch();
 
+/* ---- phân tích chuyên sâu (tải file analysis/<MÃ>.json khi bấm) ---- */
+const ANA={};
+const pctS=v=>v==null?"–":(v>0?"+":"")+f1(v)+"%";
+const toneOf=v=>v>0?"up":v<0?"down":"";
+async function toggleAnalysis(sym){
+  const box=$("anaBox"),btn=$("anaBtn");
+  if(!box.hidden){box.hidden=true;btn.setAttribute("aria-expanded","false");btn.textContent="Phân tích";return}
+  box.hidden=false;btn.setAttribute("aria-expanded","true");btn.textContent="Ẩn phân tích";
+  if(!ANA[sym]){box.innerHTML='<p class="muted">Đang tải phân tích…</p>';
+    try{const r=await fetch(`analysis/${sym}.json`,{cache:"no-cache"});if(!r.ok)throw new Error(r.status);ANA[sym]=await r.json()}
+    catch(e){box.innerHTML='<p class="muted">Chưa có bản phân tích cho mã này. Bản phân tích được tạo ở lần cập nhật kế tiếp.</p>';return}}
+  box.innerHTML=renderAnalysis(ANA[sym]);box.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});
+}
+function ladder(a){
+  const p=a.plan,zc=(p.zone[0]+p.zone[1])/2;
+  const pts=[["Cắt lỗ",p.stop,"var(--bad)",p.stop],["Vùng mua",zc,"var(--good)",`${price(p.zone[0])}–${price(p.zone[1])}`],["Giá",a.price,"var(--ink)",a.price],
+    ...(p.attack?[["Tấn công",p.attack.price,"var(--accent)",p.attack.price]]:[]),["MT1",p.t1,"var(--good)",p.t1],["MT2",p.t2,"var(--good)",p.t2]];
+  const vals=[p.stop,p.zone[0],p.zone[1],a.price,p.t1,p.t2,...(p.attack?[p.attack.price]:[])],lo=Math.min(...vals),hi=Math.max(...vals);
+  const W=Math.max(320,Math.min(680,($("anaBox").clientWidth||640)-34)),M=W<480?38:60,X=v=>M+(v-lo)/((hi-lo)||1)*(W-2*M);
+  // Xếp nhãn theo làn: chẵn = phía trên, lẻ = phía dưới, càng lớn càng xa trục. Đường dẫn của nhãn xa giữ chỗ ở các làn gần.
+  const FS=W<480?10:11,CW=FS*0.62,LH=FS+7,occ=[],items=[];
+  const free=(L,a,b)=>(occ[L]||[]).every(([c,d])=>b<c||a>d);
+  pts.map(x=>({n:x[0],v:x[1],c:x[2],t:typeof x[3]==="number"?price(x[3]):x[3]})).sort((m,n)=>(n.n==="Giá")-(m.n==="Giá")||m.v-n.v).forEach(it=>{
+    const x=X(it.v),w=(it.n.length+it.t.length+1)*CW+8,tx=Math.min(W-w/2-2,Math.max(w/2+2,x));
+    let L=[0,1,2,3,4,5].find(L=>{let ok=free(L,tx-w/2,tx+w/2);for(let k=L-2;ok&&k>=0;k-=2)ok=free(k,x-3,x+3);return ok});if(L==null){L=0;while(!free(L,tx-w/2,tx+w/2))L++}
+    (occ[L]=occ[L]||[]).push([tx-w/2,tx+w/2]);for(let k=L-2;k>=0;k-=2)(occ[k]=occ[k]||[]).push([x-3,x+3]);items.push({...it,x,tx,L})});
+  const up=Math.max(0,...items.filter(i=>i.L%2===0).map(i=>i.L/2+1)),dn=Math.max(0,...items.filter(i=>i.L%2).map(i=>(i.L-1)/2+1));
+  const AX=8+up*LH+6,H=AX+dn*LH+12,Y=L=>L%2===0?AX-10-(L/2)*LH:AX+10+FS+((L-1)/2)*LH;
+  let svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Thang giá: cắt lỗ, vùng mua, giá hiện tại, điểm tấn công và mục tiêu"><line x1="${M-10}" x2="${W-M+10}" y1="${AX}" y2="${AX}" stroke="var(--line)" stroke-width="2"/>`;
+  svg+=`<rect x="${X(p.stop)}" y="${AX-2}" width="${Math.max(2,X(p.zone[0])-X(p.stop))}" height="4" fill="var(--bad)" fill-opacity=".35"/>`;
+  svg+=`<rect x="${X(p.zone[0])}" y="${AX-7}" width="${Math.max(4,X(p.zone[1])-X(p.zone[0]))}" height="14" rx="3" fill="var(--good)" fill-opacity=".3"/>`;
+  items.forEach(({n,t,c,x,tx,L})=>{const y=Y(L),isUp=L%2===0,main=n==="Giá";
+    svg+=`<line x1="${x}" x2="${x}" y1="${isUp?y+4:AX}" y2="${isUp?AX:y-FS}" stroke="${c}" stroke-width="${main?2.5:1.2}" stroke-dasharray="${main?"":"2 2"}"/><text x="${tx}" y="${y}" text-anchor="middle" style="fill:${c};font-size:${FS}px;font-weight:${main?700:500}">${n} ${t}</text>`});
+  return svg+"</svg>"}
+function renderAnalysis(a){
+  const f=a.fund||{},t=a.tech,fl=a.flow,p=a.plan,v=a.verdict,r=f.ratios||{};
+  const sc=(x,n)=>x==null?"–":`${x}/10`;
+  const head=`<div class="ana-head">
+    <div class="vbox ${v.tone}"><span class="eyebrow">Kết luận · ${a.name?a.name:a.sym}</span><span class="vl">${v.label}</span><span class="small">${v.why}.</span>
+      <span class="small muted">Thị trường: ${a.regime}. Giá ${price(a.price)} (${pctS(a.chg)}).</span></div>
+    <div class="kgrid">
+      <div class="kv"><span class="k">Thời điểm</span><span class="v">${sc(a.scores.timing)}</span><span class="s">kỹ thuật + dòng tiền</span></div>
+      <div class="kv"><span class="k">Cơ bản</span><span class="v">${sc(a.scores.fund)}</span><span class="s">${f.has?`${a.scores.fund_n} tiêu chí đánh giá được`:"chưa có BCTC"}</span></div>
+      <div class="kv"><span class="k">Lãi/Rủi ro</span><span class="v">${p.rr==null?"–":f1(p.rr)}</span><span class="s">từ giữa vùng mua đến MT1</span></div>
+      <div class="kv"><span class="k">P/E</span><span class="v">${f.pe_now==null?"–":f1(f.pe_now)}</span><span class="s">${f.peers&&f.peers.pe?`ngành ${f1(f.peers.pe)}`:"theo giá hiện tại"}</span></div>
+      <div class="kv"><span class="k">P/B</span><span class="v">${f.pb_now==null?"–":f2(f.pb_now)}</span><span class="s">${f.peers&&f.peers.pb?`ngành ${f2(f.peers.pb)}`:""}</span></div>
+      <div class="kv"><span class="k">ROE 4 quý</span><span class="v">${f.roe==null?"–":f1(f.roe)+"%"}</span><span class="s">${f.peers&&f.peers.roe?`ngành ${f1(f.peers.roe)}%`:""}</span></div>
+    </div></div>`;
+  const att=p.attack?`<tr><td class="pl"><b>Điểm mua tấn công</b>${p.attack.active?' <span class="tag good">Đang kích hoạt</span>':''}</td><td class="pv">${price(p.attack.price)}</td><td class="pl">${p.attack.cond}</td></tr>`:"";
+  const plan=`<div><h3 style="margin-bottom:6px">Kế hoạch giao dịch</h3>${ladder(a)}
+    <div class="tbl-wrap"><table class="plan-t"><tbody>
+      <tr><td class="pl"><b>Vùng mua hợp lý</b>${p.in_zone?' <span class="tag good">Giá đang trong vùng</span>':''}</td><td class="pv">${price(p.zone[0])} – ${price(p.zone[1])}</td><td class="pl">Mua khi giá điều chỉnh về MA20 / hỗ trợ gần nhất, khối lượng giảm</td></tr>
+      ${att}
+      <tr><td class="pl"><b>Cắt lỗ</b></td><td class="pv down">${price(p.stop)}</td><td class="pl">${pctS(p.stop_pct)} so với giữa vùng mua; đóng cửa dưới mức này thì bán</td></tr>
+      <tr><td class="pl"><b>Mục tiêu 1</b></td><td class="pv up">${price(p.t1)}</td><td class="pl">${pctS(p.t1_pct)} · kháng cự gần nhất; chốt 1/2 vị thế</td></tr>
+      <tr><td class="pl"><b>Mục tiêu 2</b></td><td class="pv up">${price(p.t2)}</td><td class="pl">${pctS(p.t2_pct)} · kháng cự xa / đỉnh 52 tuần; dời cắt lỗ lên giá vốn sau MT1</td></tr>
+      <tr><td class="pl"><b>Tỷ trọng</b></td><td class="pl" colspan="2">${p.alloc}</td></tr>
+    </tbody></table></div></div>`;
+  const sw=`<div class="sw"><div><h3><span class="dot" style="background:var(--good)"></span>Điểm mạnh</h3><ul>${(a.strengths||[]).map(x=>`<li>${x}</li>`).join("")||"<li class='muted'>Chưa có điểm nổi bật</li>"}</ul></div>
+    <div><h3><span class="dot" style="background:var(--bad)"></span>Điểm yếu, rủi ro</h3><ul>${(a.weaknesses||[]).map(x=>`<li>${x}</li>`).join("")||"<li class='muted'>Không có điểm yếu rõ rệt</li>"}</ul></div></div>`;
+  let fund='';
+  if(f.has){
+    const q=f.quarters||[],mx=Math.max(...q.map(x=>Math.abs(x.rev||0)),1),mxn=Math.max(...q.map(x=>Math.abs(x.np||0)),1);
+    const qtab=q.length?`<div class="tbl-wrap"><table><thead><tr><th class="l">Quý</th><th>${f.bank?"Thu nhập lãi thuần":"Doanh thu"} (tỷ)</th><th>LNST cổ đông mẹ (tỷ)</th>${f.bank?"":"<th>Biên LN gộp</th>"}</tr></thead><tbody>${q.map(x=>`<tr><td class="l">${x.p.replace("-Q"," Q")}</td><td>${x.rev==null?"–":f0(x.rev)}</td><td class="${toneOf(x.np)}">${x.np==null?"–":f0(x.np)}</td>${f.bank?"":`<td>${x.gm==null?"–":f1(x.gm)+"%"}</td>`}</tr>`).join("")}</tbody></table></div>`:"";
+    fund=`<div><h3 style="margin-bottom:6px">Cơ bản doanh nghiệp · đạt ${sc(a.scores.fund)}</h3>
+      <div class="tbl-wrap"><table class="crit-t"><tbody>${f.criteria.map(c=>`<tr><td class="ic ${c.ok==null?"na":c.ok?"ok":"no"}">${c.ok==null?"–":c.ok?"✓":"✗"}</td><td>${c.label}<div class="faint small th-m">cần ${c.th}</div></td><td class="val">${c.val==null?"–":c.val}</td><td class="faint small th-d">${c.th}</td></tr>`).join("")}</tbody></table></div>
+      <div class="kgrid" style="margin-top:10px">
+        <div class="kv"><span class="k">EPS 4 quý</span><span class="v">${r.eps_ttm==null?"–":f0(r.eps_ttm)}</span><span class="s">đồng/cổ phiếu</span></div>
+        <div class="kv"><span class="k">Giá trị sổ sách</span><span class="v">${r.bvps==null?"–":f0(r.bvps)}</span><span class="s">đồng/cổ phiếu</span></div>
+        ${f.bank?`<div class="kv"><span class="k">CIR · LDR</span><span class="v">${r.cir==null?"–":f1(r.cir)+"%"} · ${r.ldr==null?"–":f1(r.ldr)+"%"}</span><span class="s">chi phí/thu nhập · cho vay/huy động</span></div>`
+          :`<div class="kv"><span class="k">Biên LN gộp · ròng</span><span class="v">${r.gross_margin==null?"–":f1(r.gross_margin)+"%"} · ${r.net_margin==null?"–":f1(r.net_margin)+"%"}</span><span class="s">quý gần nhất</span></div>`}
+        <div class="kv"><span class="k">Tăng trưởng LNST</span><span class="v ${toneOf(f.np_yoy)}">${pctS(f.np_yoy)}</span><span class="s">so với cùng kỳ</span></div>
+        <div class="kv"><span class="k">${f.bank?"Tăng trưởng TN lãi thuần":"Tăng trưởng doanh thu"}</span><span class="v ${toneOf(f.rev_yoy)}">${pctS(f.rev_yoy)}</span><span class="s">so với cùng kỳ</span></div>
+        <div class="kv"><span class="k">${f.fin?"Vốn chủ / tổng tài sản":"Nợ vay / tổng tài sản"}</span><span class="v">${f.fin?(r.equity_assets==null?"–":f1(r.equity_assets)+"%"):(r.debt_assets==null?"–":f1(r.debt_assets)+"%")}</span><span class="s">${r.beta==null?"":"beta "+f2(r.beta)}</span></div>
+      </div>${qtab}
+      <p class="ana-note">Nguồn: báo cáo tài chính quý và bảng chỉ số của KBS qua vnstock, cập nhật ${f.updated?fullD(f.updated):"–"}. P/E, P/B tính theo giá hiện tại. Số liệu quý dùng để tham khảo xu hướng.</p></div>`;
+  } else fund=`<div><h3>Cơ bản doanh nghiệp</h3><p class="muted small">Báo cáo tài chính của mã này đang được tải dần (mỗi lần cập nhật làm mới một nhóm mã). Phần kỹ thuật và dòng tiền bên dưới vẫn đầy đủ.</p></div>`;
+  const ma=(n,val)=>`<div class="kv"><span class="k">${n}</span><span class="v">${val==null?"–":price(val)}</span><span class="s ${val==null?"":a.price>=val?"up":"down"}">${val==null?"":(a.price>=val?"giá trên":"giá dưới")+" "+f1(Math.abs((a.price/val-1)*100))+"%"}</span></div>`;
+  const pos=t.hi52>t.lo52?Math.max(0,Math.min(100,(a.price-t.lo52)/(t.hi52-t.lo52)*100)):50;
+  const mc=t.macd||{};const mcTxt=mc.cross?(mc.cross[0]==="up"?"vừa cắt lên":"vừa cắt xuống")+" đường tín hiệu":(mc.h>0?"trên đường tín hiệu":"dưới đường tín hiệu");
+  const tech=`<div><h3 style="margin-bottom:6px">Kỹ thuật</h3>
+    <p class="small" style="margin:0 0 8px"><span class="tag ${t.trend_tone==="good"?"good":t.trend_tone==="bad"?"":"hotx"}">${t.trend}</span>${t.ma200_up==null?"":t.ma200_up?" · MA200 đang đi lên":" · MA200 đang đi xuống"}</p>
+    <div class="kgrid">${ma("MA20",t.ma20)}${ma("MA50",t.ma50)}${ma("MA200",t.ma200)}
+      <div class="kv"><span class="k">RSI 14</span><span class="v">${t.rsi==null?"–":f1(t.rsi)}</span><span class="s">${t.rsi>=70?"quá mua":t.rsi<=30?"quá bán":"trung tính"}</span></div>
+      <div class="kv"><span class="k">MACD</span><span class="v ${toneOf(mc.h)}">${mc.h==null?"–":f0(mc.h)}</span><span class="s">${mcTxt}</span></div>
+      <div class="kv"><span class="k">Biên độ (ATR14)</span><span class="v">${t.atr_pct==null?"–":f1(t.atr_pct)+"%"}</span><span class="s">dao động trung bình/phiên</span></div>
+    </div>
+    <div style="margin-top:10px"><span class="small muted">Vùng giá 52 tuần</span><div class="range"><i style="left:calc(${pos}% - 1px)"></i></div><div class="rng-l"><span>${price(t.lo52)}</span><span>cách đỉnh ${f1(Math.abs(t.from_hi52||0))}%</span><span>${price(t.hi52)}</span></div></div>
+    <div class="levels" style="margin-top:10px"><span class="small muted" style="align-self:center">Hỗ trợ</span>${(t.supports||[]).map(x=>`<span class="chip"><b>${price(x)}</b></span>`).join("")||'<span class="small faint">–</span>'}
+      <span class="small muted" style="align-self:center;margin-left:8px">Kháng cự</span>${(t.resistances||[]).map(x=>`<span class="chip"><b>${price(x)}</b></span>`).join("")||'<span class="small faint">–</span>'}</div>
+    <div class="levels" style="margin-top:8px">${[["1 tuần","w1"],["1 tháng","m1"],["3 tháng","m3"],["6 tháng","m6"]].map(([n,k])=>`<span class="chip">${n} <b class="${toneOf(t.perf[k])}">${pctS(t.perf[k])}</b></span>`).join("")}</div></div>`;
+  const flow=`<div><h3 style="margin-bottom:6px">Dòng tiền</h3><div class="kgrid">
+      <div class="kv"><span class="k">Banker · MA10</span><span class="v">${f1(fl.banker)} · ${f1(fl.bma)}</span><span class="s">${fl.new_in?"vừa vào mới":fl.streak>=SUS?`duy trì ${fl.streak} phiên`:fl.banker>.5?(fl.banker>=fl.bma?"trên MA10":"dưới MA10"):"chưa có tiền lớn"}</span></div>
+      <div class="kv"><span class="k">Hot Money</span><span class="v">${f1(fl.hot)}</span><span class="s">dòng tiền đầu cơ (0–20)</span></div>
+      <div class="kv"><span class="k">Sức mạnh giá RS</span><span class="v">${fl.rs==null?"–":f0(fl.rs)}</span><span class="s">so với toàn bộ mã quét</span></div>
+      <div class="kv"><span class="k">KL / TB20</span><span class="v">${fl.vr==null?"–":f2(fl.vr)+"×"}</span><span class="s">GTGD TB20 ${fl.value20==null?"–":f1(fl.value20)} tỷ</span></div>
+      <div class="kv"><span class="k">Khối ngoại 5 phiên</span><span class="v ${toneOf(fl.f5)}">${fl.f5==null?"–":(fl.f5>0?"+":"")+f1(fl.f5)+" tỷ"}</span><span class="s">mua − bán ròng</span></div>
+      <div class="kv"><span class="k">Khối ngoại 20 phiên</span><span class="v ${toneOf(fl.f20)}">${fl.f20==null?"–":(fl.f20>0?"+":"")+f1(fl.f20)+" tỷ"}</span><span class="s">mua − bán ròng</span></div></div></div>`;
+  return `<div class="ana">${head}${plan}${sw}${fund}${tech}${flow}
+    <p class="ana-note">Bản phân tích tự động theo quy tắc cố định, dùng để tham khảo, không phải khuyến nghị đầu tư. Luôn tự kiểm tra tin tức, báo cáo tài chính đầy đủ và quản trị rủi ro trước khi giao dịch.</p></div>`;
+}
+
 /* detail */
 function mcdxChart(host,sym){
   const st=S[sym];host.innerHTML="";const n=st.close.length,W=760,H1=190,H2=150,gap=26,m={l:48,r:12,t:10,b:22},H=H1+gap+H2+m.b+m.t;
@@ -539,8 +674,9 @@ function openDetail(sym){
   $("sheet").innerHTML=`
    <div class="sheet-head"><div><div class="eyebrow">${NAME[x.basket]} · ${x.sector}</div><h2 id="dTitle" style="font-size:22px;display:flex;align-items:center;gap:6px">${heart(sym)}${sym}</h2>
      <div class="big ${cls(x.chg)}">${price(x.price)} <span style="font-size:15px">${sgn(x.chg)}%</span></div></div>
-     <button class="btn" id="closeBtn" type="button">Đóng</button></div>
+     <div class="sheet-actions">${D.has_analysis?'<button class="btn primary" id="anaBtn" type="button" aria-expanded="false" aria-controls="anaBox">Phân tích</button>':''}<button class="btn" id="closeBtn" type="button">Đóng</button></div></div>
    <div class="verdict">${tags.join("")}</div>
+   <section class="panel" id="anaBox" hidden aria-live="polite"></section>
    <section class="panel"><div class="panel-head"><h3>Giá và MCDX, ${n} phiên</h3>
      <div class="legend"><span><i style="background:var(--banker)"></i>Banker</span><span><i style="background:var(--hot)"></i>Hot Money</span><span><i style="background:var(--retail)"></i>Retailer</span><span><i class="line" style="background:var(--ink)"></i>MA10 Banker</span></div></div>
      <div class="chart" id="dChart"></div><p class="note">Vùng tô nhạt là 5 phiên gần nhất. Đường nét đứt xanh đánh dấu phiên Banker bắt đầu xuất hiện; đường đỏ là mức cắt lỗ gợi ý.</p></section>
@@ -552,6 +688,7 @@ function openDetail(sym){
      <tbody>${rows.map(r=>`<tr><td class="l">${fullD(r.d)}</td><td>${price(r.p)}</td><td class="${cls(r.c)}">${sgn(r.c)}%</td><td>${f0(r.v/1000)}</td><td>${r.vr==null?"–":f2(r.vr)+"×"}</td><td><b>${f1(r.b)}</b></td><td class="${cls(r.db)}">${sgn(r.db,f1)}</td><td>${f1(r.h)}</td>
        <td>${r.f==null?"–":`<div class="fnet"><span class="${cls(r.f)}">${sgn(r.f)}</span><span class="b"><i style="${r.f>=0?`left:50%;width:${50*r.f/fmax}%;background:var(--good)`:`right:50%;width:${50*-r.f/fmax}%;background:var(--bad)`}"></i></span></div>`}</td></tr>`).join("")}</tbody></table></div></section>`;
   $("overlay").hidden=false;mcdxChart($("dChart"),sym);$("closeBtn").focus();$("closeBtn").onclick=closeDetail;
+  if($("anaBtn"))$("anaBtn").onclick=()=>toggleAnalysis(sym);
 }
 function closeDetail(){$("overlay").hidden=true;if(lastFocus)lastFocus.focus()}
 $("overlay").addEventListener("click",e=>{if(e.target.id==="overlay"||e.target.closest('a[href^="#"]')){$("overlay").hidden=true}});
