@@ -1,9 +1,12 @@
 """Báo cáo tài chính theo quý (nguồn vnstock / KBS), lưu đệm trong data/fundamentals.json.
 
-Mỗi mã cần ~4 lần gọi (KQKD, CĐKT, LCTT, chỉ số) nên làm mới theo lô mỗi lần chạy:
-mã chưa có hoặc dữ liệu cũ hơn REFRESH_DAYS được ưu tiên, mã đang có tín hiệu được ưu tiên trước nhất.
+Mỗi mã cần vài lần gọi nên làm mới theo lô mỗi lần chạy. Mã đến hạn khi: chưa có dữ liệu, dữ liệu cũ hơn
+REFRESH_DAYS, hoặc đang mùa báo cáo (trong SEASON_DAYS ngày sau khi quý kết thúc) mà mã chưa có quý vừa kết thúc
+và lần kiểm tra trước đã qua RECHECK_DAYS ngày. Thứ tự: chưa có dữ liệu → chưa có quý mới → mã đang có tín hiệu.
 
-    python -m mcdx.fundamentals --probe FPT,VCB,HAH   # ghi cấu trúc thô ra data/debug/fund_probe.json
+    python -m mcdx.fundamentals --probe FPT,VCB,HAH          # ghi cấu trúc thô ra data/debug/fund_probe.json
+    python -m mcdx.fundamentals --refresh --shard 0/10       # làm mới phần 0 trong 10 phần, ghi data/fund_parts/
+    python -m mcdx.fundamentals --merge data/fund_parts      # gộp các phần vào data/fundamentals.json
 """
 from __future__ import annotations
 
@@ -25,6 +28,8 @@ from . import store
 log = logging.getLogger("fund")
 CACHE = store.DATA / "fundamentals.json"
 REFRESH_DAYS = 30
+RECHECK_DAYS = 2    # mùa báo cáo: kiểm tra lại mã chưa có quý mới sau mỗi 2 ngày
+SEASON_DAYS = 60    # báo cáo quý hợp nhất/công ty mẹ có thể nộp đến ~45 ngày sau khi quý kết thúc
 QUARTERS = 8
 
 # Trường cần lấy: (khóa chuẩn, tiền tố item_id của KBS, từ khóa tên tiếng Việt). Tên được ưu tiên khi có.
@@ -227,9 +232,46 @@ def load_cache() -> dict:
     return store.read_json(CACHE, {})
 
 
-def refresh(symbols: list[str], priority: list[str], budget: int, today: dt.date, seconds: float | None = None) -> dict:
-    """Làm mới tối đa `budget` mã và dừng khi hết `seconds` giây. Trả về cache đầy đủ."""
-    import time
+def expected_quarter(today: dt.date) -> tuple[str, dt.date]:
+    """Quý gần nhất đã kết thúc (nhãn kiểu KBS '2026-Q3') và ngày kết thúc quý."""
+    q = (today.month - 1) // 3
+    y = today.year if q else today.year - 1
+    q = q or 4
+    end = dt.date(y, 3 * q, 31 if q in (1, 4) else 30)
+    return f"{y}-Q{q}", end
+
+
+def latest_period(rec: dict | None) -> str | None:
+    ps = [p for part in ("income", "ratio") for v in ((rec or {}).get(part) or {}).values() if isinstance(v, dict)
+          for p, x in v.items() if x is not None and "_" not in p]
+    return max(ps) if ps else None
+
+
+def due_reason(rec: dict | None, today: dt.date) -> str | None:
+    """Lý do mã cần làm mới: 'missing', 'new_quarter', 'old' hoặc None."""
+    u = (rec or {}).get("updated")
+    if not u or latest_period(rec) is None:
+        return "missing" if not u or (today - dt.date.fromisoformat(u)).days >= RECHECK_DAYS else None
+    age = (today - dt.date.fromisoformat(u)).days
+    exp, end = expected_quarter(today)
+    if (today - end).days <= SEASON_DAYS and latest_period(rec) < exp and age >= RECHECK_DAYS:
+        return "new_quarter"
+    return "old" if age >= REFRESH_DAYS else None
+
+
+def due_list(symbols: list[str], cache: dict, priority: list[str], today: dt.date) -> list[str]:
+    rank = {"missing": 0, "new_quarter": 1, "old": 2}
+    pri = set(priority)
+    due = [(rank[r], s not in pri, i, s) for i, s in enumerate(dict.fromkeys(symbols))
+           if (r := due_reason(cache.get(s), today))]
+    return [s for *_, s in sorted(due)]
+
+
+def refresh(symbols: list[str], priority: list[str], budget: int, today: dt.date, seconds: float | None = None,
+            shard: tuple[int, int] | None = None, part_path: Path | None = None) -> dict:
+    """Làm mới tối đa `budget` mã và dừng khi hết `seconds` giây. Trả về cache đầy đủ.
+    shard=(i, n): chỉ làm phần thứ i trong n phần của danh sách đến hạn (chạy song song nhiều máy);
+    part_path: ghi riêng các mã vừa làm mới ra file này để gộp sau."""
     t0 = time.monotonic()
     cache = load_cache()
     if budget <= 0:
@@ -239,30 +281,70 @@ def refresh(symbols: list[str], priority: list[str], budget: int, today: dt.date
     except Exception as e:
         log.warning("Không dùng được nguồn báo cáo tài chính: %s", e)
         return cache
-
-    def age(s):
-        u = cache.get(s, {}).get("updated")
-        return (today - dt.date.fromisoformat(u)).days if u else 10_000
-    due = [s for s in symbols if age(s) >= REFRESH_DAYS]
-    pri = set(priority)
-    due.sort(key=lambda s: (s not in pri, -age(s)))
+    due = due_list(symbols, cache, priority, today)
+    if shard:
+        due = due[shard[0]::shard[1]]
     todo = due[:budget]
     if todo:
-        log.info("Báo cáo tài chính: làm mới %d/%d mã đến hạn", len(todo), len(due))
+        why = {}
+        for x in todo:
+            r = due_reason(cache.get(x), today)
+            why[r] = why.get(r, 0) + 1
+        log.info("Báo cáo tài chính: làm mới %d/%d mã đến hạn %s", len(todo), len(due), why)
+    changed: dict = {}
+
+    def save():
+        store.write_json(CACHE, cache)
+        if part_path:
+            part_path.parent.mkdir(parents=True, exist_ok=True)
+            store.write_json(part_path, changed)
     for i, s in enumerate(todo, 1):
         if seconds and time.monotonic() - t0 > seconds:
             log.info("Báo cáo tài chính: hết thời gian, đã làm mới %d mã", i - 1)
             break
+        before = latest_period(cache.get(s))
         rec = src.fetch(s)
         if rec:
             cache[s] = rec
         else:
             cache.setdefault(s, {})["updated"] = today.isoformat()  # tránh thử lại liên tục mã không có dữ liệu
+        changed[s] = cache[s]
+        after = latest_period(cache.get(s))
+        if after and after != before:
+            log.info("%s: %s → %s", s, before or "chưa có", after)
         if i % 10 == 0:
-            store.write_json(CACHE, cache)
+            save()
             log.info("Báo cáo tài chính %d/%d", i, len(todo))
-    store.write_json(CACHE, cache)
+    save()
     return cache
+
+
+def merge(parts_dir: Path) -> dict:
+    """Gộp các file phần (mã → bản ghi) vào cache; bản ghi có dữ liệu không bị ghi đè bởi bản ghi rỗng."""
+    cache = load_cache()
+    n = 0
+    for f in sorted(Path(parts_dir).rglob("*.json")):
+        for s, rec in json.loads(f.read_text(encoding="utf-8")).items():
+            if latest_period(rec) is None and latest_period(cache.get(s)) is not None:
+                cache[s]["updated"] = rec.get("updated", cache[s].get("updated"))
+            else:
+                cache[s] = rec
+            n += 1
+    store.write_json(CACHE, cache)
+    log.info("Đã gộp %d mã vào %s (tổng %d mã)", n, CACHE, len(cache))
+    return cache
+
+
+def summary(today: dt.date | None = None) -> dict:
+    today = today or dt.date.today()
+    cache = load_cache()
+    exp, _ = expected_quarter(today)
+    per: dict = {}
+    for rec in cache.values():
+        p = latest_period(rec) or "không có"
+        per[p] = per.get(p, 0) + 1
+    return {"total": len(cache), "expected_quarter": exp, "with_expected": sum(v for k, v in per.items() if k >= exp and k != "không có"),
+            "periods": dict(sorted(per.items()))}
 
 
 def probe(symbols: list[str]):
@@ -290,6 +372,24 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     ap = argparse.ArgumentParser()
     ap.add_argument("--probe", help="Danh sách mã, cách nhau bởi dấu phẩy")
+    ap.add_argument("--refresh", action="store_true", help="Làm mới các mã đến hạn trong rổ VN30/MID/SMALL")
+    ap.add_argument("--shard", default="0/1", help="i/n: làm phần thứ i trong n phần")
+    ap.add_argument("--minutes", type=float, default=50)
+    ap.add_argument("--merge", help="Thư mục chứa các file phần để gộp")
+    ap.add_argument("--summary", action="store_true")
+    ap.add_argument("--recheck", type=int, help="Số ngày tối thiểu giữa hai lần kiểm tra quý mới (mặc định RECHECK_DAYS)")
     a = ap.parse_args()
+    if a.recheck is not None:
+        RECHECK_DAYS = a.recheck
     if a.probe:
         probe([s.strip().upper() for s in a.probe.split(",") if s.strip()])
+    if a.refresh:
+        i, n = (int(x) for x in a.shard.split("/"))
+        uni = store.read_json(store.UNIVERSE, {})
+        syms = [s for b in ("VN30", "MID", "SMALL") for s in uni.get(b, [])]
+        refresh(syms, store.read_json(store.DATA / "signal_syms.json", []), 10_000, dt.date.today(),
+                seconds=a.minutes * 60, shard=(i, n), part_path=store.DATA / "fund_parts" / f"part_{i:02d}.json")
+    if a.merge:
+        merge(Path(a.merge))
+    if a.summary or a.merge:
+        print(json.dumps(summary(), ensure_ascii=False))

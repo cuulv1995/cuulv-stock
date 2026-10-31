@@ -1,0 +1,81 @@
+name: Cập nhật báo cáo tài chính (toàn bộ)
+
+# Chạy tay khi các doanh nghiệp vừa công bố báo cáo quý: chia danh sách mã đến hạn cho nhiều máy chạy song song
+# (mỗi máy có giới hạn lượt gọi riêng), gộp kết quả, lưu vào repo rồi dựng lại dashboard.
+on:
+  workflow_dispatch:
+    inputs:
+      recheck:
+        description: "Kiểm tra lại mã chưa có quý mới nếu lần kiểm tra trước cách đây ít nhất N ngày"
+        default: "0"
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Cài thư viện
+        env:
+          VNSTOCK_DISABLE_AGENT_SETUP: "1"
+        run: |
+          pip install -r requirements.txt
+          pip install --extra-index-url https://vnstocks.com/api/simple vnstock vnai
+      - name: Tải báo cáo tài chính phần ${{ matrix.shard }}/10
+        env:
+          VNSTOCK_API_KEY: ${{ secrets.VNSTOCK_API_KEY }}
+          VNSTOCK_DISABLE_AGENT_SETUP: "1"
+        run: python -m mcdx.fundamentals --refresh --shard ${{ matrix.shard }}/10 --minutes 45 --recheck "${{ inputs.recheck }}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fund-part-${{ matrix.shard }}
+          path: data/fund_parts/
+          if-no-files-found: ignore
+          retention-days: 3
+
+  merge:
+    needs: fetch
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: fund-part-*
+          path: ${{ runner.temp }}/parts
+      - name: Gộp và lưu vào repo
+        run: |
+          git config user.name "mcdx-bot"
+          git config user.email "mcdx-bot@users.noreply.github.com"
+          for i in 1 2 3 4 5; do
+            git fetch -q origin main && git reset -q --hard origin/main
+            python -m mcdx.fundamentals --merge "${{ runner.temp }}/parts"
+            git add data/fundamentals.json
+            git diff --cached --quiet && { echo "Không có thay đổi."; break; }
+            git commit -q -m "Báo cáo tài chính mới nhất ($(TZ=Asia/Ho_Chi_Minh date +%d/%m/%Y))"
+            git push -q && break
+            sleep 15
+          done
+      - name: Dựng lại dashboard
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run daily.yml -R "${{ github.repository }}" -f force=true
