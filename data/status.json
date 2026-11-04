@@ -1,7 +1,7 @@
 {
  "date": "2026-11-04",
- "complete": false,
- "latest_session": "2026-11-03",
+ "complete": true,
+ "latest_session": "2026-11-04",
  "intraday": false,
- "generated_at": "2026-11-04T00:41+07:00"
+ "generated_at": "2026-11-04T19:20+07:00"
 }
