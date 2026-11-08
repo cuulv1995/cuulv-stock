@@ -6,6 +6,9 @@ on:
       symbols:
         description: "Danh sách mã, cách nhau bởi dấu phẩy"
         default: "FPT,VIX,HPG"
+      mode:
+        description: "describe hoặc compare"
+        default: "describe"
 
 permissions:
   contents: write
@@ -29,7 +32,7 @@ jobs:
         env:
           VNSTOCK_API_KEY: ${{ secrets.VNSTOCK_API_KEY }}
           VNSTOCK_DISABLE_AGENT_SETUP: "1"
-        run: python -m mcdx.probe_intraday "${{ inputs.symbols }}"
+        run: python -m mcdx.probe_intraday "${{ inputs.symbols }}" "${{ inputs.mode }}"
       - name: Lưu kết quả
         run: |
           git config user.name "mcdx-bot"
