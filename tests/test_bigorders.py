@@ -18,17 +18,17 @@ def ticks(day):
     return pd.DataFrame({
         "time": [t, t + pd.Timedelta(minutes=1), t + pd.Timedelta(minutes=2), t + pd.Timedelta(minutes=3), t + pd.Timedelta(hours=5)],
         "price": [20000, 20100, 19900, 20000, 20050],
-        "volume": [150000, 99999, 200000, 1000, 500000],
+        "volume": [150000, 79999, 200000, 1000, 500000],
         "side": ["buy", "buy", "sell", "sell", "atc"],
     })
 
 
 def test_summarize():
     r = bigorders.summarize("AAA", ticks("2026-11-06"))
-    assert (r["buy_n"], r["sell_n"]) == (1, 1), r          # 99.999 cổ và ATC không tính
+    assert (r["buy_n"], r["sell_n"]) == (1, 1), r          # 79.999 cổ và ATC không tính
     assert r["buy_vol"] == 150000 and r["sell_vol"] == 200000
     assert r["net_vol"] == -50000 and r["net_val"] == round(3.0 - 3.98, 2)
-    assert r["share"] == round(350000 / 950999 * 100, 1)
+    assert r["share"] == round(350000 / 930999 * 100, 1)
     assert [t["side"] for t in r["trades"]] == ["buy", "sell"]
 
 

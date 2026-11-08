@@ -206,7 +206,7 @@ def main():
             prio = [s for b in ("VN30", "MID", "SMALL") for s in uni.get(b, [])]
             signal = store.read_json(store.DATA / "signal_syms.json", [])
             fund = fundamentals.refresh(prio, signal, budget, today, seconds=minutes * 60)
-    # Lệnh khớp lớn trong phiên (≥ 100.000 cổ)
+    # Lệnh khớp lớn trong phiên (≥ 80.000 cổ)
     big = {}
     if not args.demo and hasattr(client, "ticks"):
         from . import bigorders

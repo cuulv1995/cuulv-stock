@@ -289,14 +289,14 @@ footer{font-size:12px;color:var(--ink-3);line-height:1.6;max-width:80ch}
   </section>
 
   <section class="panel" aria-labelledby="hBig" id="pBig">
-    <div class="panel-head"><h2 id="hBig">Lệnh khớp lớn ≥ <span id="bigTh">100.000</span> cổ</h2><span class="faint small" id="cBig"></span></div>
+    <div class="panel-head"><h2 id="hBig">Lệnh khớp lớn ≥ <span id="bigTh">80.000</span> cổ</h2><span class="faint small" id="cBig"></span></div>
     <p class="bigsum" id="bigSum"></p>
     <div class="panel-head" style="margin-top:4px"><h3>Theo mã</h3>
       <div class="seg" role="group" aria-label="Sắp xếp lệnh lớn"><button type="button" data-bigsort="total" aria-pressed="true">Tổng giá trị</button><button type="button" data-bigsort="buy" aria-pressed="false">Mua ròng</button><button type="button" data-bigsort="sell" aria-pressed="false">Bán ròng</button></div></div>
     <div class="tbl-wrap"><table><thead><tr><th class="l">#</th><th class="l">Mã</th><th>Mua chủ động lớn</th><th>Bán chủ động lớn</th><th>Ròng (cổ)</th><th>Ròng (tỷ)</th><th>% KL phiên</th><th>Giá · %</th><th>Banker</th></tr></thead><tbody id="tBig"></tbody></table></div>
     <h3 style="margin-top:16px">Giao dịch lớn nhất phiên</h3>
     <div class="tbl-wrap"><table><thead><tr><th class="l">Giờ</th><th class="l">Mã</th><th class="l">Chiều</th><th>Giá</th><th>Khối lượng</th><th>Giá trị (tỷ)</th></tr></thead><tbody id="tBigT"></tbody></table></div>
-    <p class="note">Mỗi dòng là một lần khớp riêng lẻ có khối lượng từ ngưỡng trở lên, đúng như sàn ghi nhận (không cộng dồn theo giây). "Mua chủ động" là bên mua chấp nhận giá bán (thường thể hiện nhu cầu mua mạnh), "Bán chủ động" ngược lại. Không tính khớp lệnh định kỳ ATO/ATC vì đó là tổng nhiều lệnh. Một lệnh đặt lớn có thể khớp thành nhiều giao dịch nhỏ nên con số này chỉ phản ánh phần khớp lớn. "% KL phiên" = khối lượng khớp lớn / tổng khối lượng khớp của mã. Dữ liệu từ vnstock (KBS); mỗi lần cập nhật quét lần lượt các mã đang nắm giữ, đang có tín hiệu, rồi theo thanh khoản cho đến hết thời gian cho phép.</p>
+    <p class="note">Mỗi dòng là một lệnh chủ động có khối lượng từ ngưỡng trở lên theo dữ liệu KBS (các phần khớp của cùng một lệnh chủ động được ghi thành một dòng; các lệnh khác nhau trong cùng một giây vẫn tách riêng). "Mua chủ động" là bên mua chấp nhận giá bán (thường thể hiện nhu cầu mua mạnh), "Bán chủ động" ngược lại. Không tính khớp lệnh định kỳ ATO/ATC vì đó là tổng nhiều lệnh. Một lệnh đặt lớn có thể khớp thành nhiều giao dịch nhỏ nên con số này chỉ phản ánh phần khớp lớn. "% KL phiên" = khối lượng khớp lớn / tổng khối lượng khớp của mã. Dữ liệu từ vnstock (KBS); mỗi lần cập nhật quét lần lượt các mã đang nắm giữ, đang có tín hiệu, rồi theo thanh khoản cho đến hết thời gian cho phép.</p>
   </section>
 
   <section class="panel" aria-labelledby="hQual" id="pQual">
@@ -761,7 +761,7 @@ async function loadBig(sym){
   const box=$("bigBox");let a;
   try{a=await getAna(sym)}catch(e){box.innerHTML='<h3>Lệnh khớp lớn</h3><p class="muted small">Chưa có dữ liệu.</p>';return}
   if(!box.isConnected)return;
-  const H=a.big_hist,th=H?nf(H.threshold,0):"100.000";
+  const H=a.big_hist,th=H?nf(H.threshold,0):"80.000";
   const days=(H&&H.days)||[];
   if(!days.length){box.innerHTML=`<h3>Lệnh khớp lớn ≥ ${th} cổ</h3><p class="muted small">Chưa có dữ liệu khớp lệnh. Dữ liệu được thu thập từ lần cập nhật kế tiếp.</p>`;return}
   const vol=v=>v>=1e6?nf(v/1e6,2)+" tr":nf(v,0);
@@ -775,7 +775,7 @@ async function loadBig(sym){
   box.innerHTML=`<div class="panel-head"><h3>Lệnh khớp lớn ≥ ${th} cổ · ${days.length} phiên</h3></div>${sum}
     <div class="panel-head" style="margin-top:14px"><h3 id="bigDayT"></h3><div class="seg" role="group" aria-label="Chọn phiên">${days.map((d,i)=>`<button type="button" data-bigbtn="${i}" aria-pressed="false" ${d.scanned?"":"disabled"}>${fullD(d.date).slice(0,5)}</button>`).join("")}</div></div>
     <div id="bigDay"></div>
-    <p class="note">Mỗi dòng là một lần khớp riêng lẻ từ ${th} cổ trở lên, đúng như sàn ghi nhận (không cộng dồn theo giây). Mua chủ động: bên mua chấp nhận giá bán; bán chủ động: bên bán chấp nhận giá mua. Không tính khớp định kỳ ATO/ATC. Một lệnh đặt lớn có thể khớp thành nhiều giao dịch nhỏ nên đây chỉ là phần khớp lớn.</p>`;
+    <p class="note">Mỗi dòng là một lệnh chủ động từ ${th} cổ trở lên theo dữ liệu KBS: các phần khớp của cùng một lệnh mua (hoặc bán) chủ động quét qua nhiều lệnh đối ứng được ghi thành một dòng, nên khối lượng có thể lớn hơn từng dòng khớp lẻ trên ứng dụng của công ty chứng khoán (ví dụ VIX 13:41:46 phiên 06/11: KBS ghi 367.000 cổ, ứng dụng tách 255.900 + 40.200 + 24.100 + …). Các lệnh chủ động khác nhau trong cùng một giây vẫn là các dòng riêng. Mua chủ động: bên mua chấp nhận giá bán; bán chủ động: bên bán chấp nhận giá mua. Không tính khớp định kỳ ATO/ATC.</p>`;
   const show=i=>{const d=days[i];if(!d||!d.scanned)return;
     box.querySelectorAll("[data-bigbtn]").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.bigbtn===i?"true":"false"));
     $("bigDayT").textContent=`Chi tiết phiên ${fullD(d.date)}`;

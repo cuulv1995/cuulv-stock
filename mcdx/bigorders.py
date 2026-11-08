@@ -1,4 +1,4 @@
-"""Lệnh khớp lớn trong phiên (mặc định ≥ 100.000 cổ) từ dữ liệu khớp lệnh từng giao dịch của vnstock (KBS).
+"""Lệnh khớp lớn trong phiên (mặc định ≥ 80.000 cổ) từ dữ liệu khớp lệnh từng giao dịch của vnstock (KBS).
 
 Mỗi giao dịch có chiều chủ động: "buy" = bên mua chủ động khớp vào giá bán (mua chủ động),
 "sell" = bên bán chủ động khớp vào giá mua (bán chủ động). Khớp lệnh định kỳ mở cửa/đóng cửa (ATO/ATC)
@@ -17,7 +17,7 @@ import pandas as pd
 from . import store
 
 log = logging.getLogger("bigorders")
-THRESHOLD = int(os.environ.get("BIG_THRESHOLD", "100000") or 100000)
+THRESHOLD = int(os.environ.get("BIG_THRESHOLD", "80000") or 80000)
 MAX_TRADES = 40       # số giao dịch lớn giữ lại cho mỗi mã (lớn nhất)
 KEEP_DAYS = 10        # số phiên lưu lại trong data/bigorders/
 OUT = store.DATA / "bigorders"
