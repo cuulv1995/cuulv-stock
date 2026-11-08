@@ -248,9 +248,9 @@ class VnstockClient:
             page += 1
         if not frames:
             return None
+        # Giữ nguyên từng lần khớp như sàn ghi nhận: không gộp, không bỏ dòng trùng giờ/giá/khối lượng
+        # (hai lần khớp riêng có thể giống hệt nhau). Các trang của API không chồng lấn nhau.
         df = pd.concat(frames, ignore_index=True)
-        if "id" in df.columns:
-            df = df.drop_duplicates("id")
         out = pd.DataFrame({"time": pd.to_datetime(df["time"]), "price": pd.to_numeric(df["price"], errors="coerce"),
                             "volume": pd.to_numeric(df["volume"], errors="coerce"),
                             "side": df["match_type"].astype(str).str.lower()}).dropna(subset=["price", "volume"])
