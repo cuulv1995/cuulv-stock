@@ -6,511 +6,864 @@
  "data": {
   "VIX": {
    "kbs": {
-    "len": 9347,
+    "len": 0,
+    "sec": 0.0
+   },
+   "vci_ps100": {
+    "len": 100,
     "columns": [
      "time",
      "price",
      "volume",
      "match_type",
-     "id",
-     "trading_date",
-     "symbol",
-     "price_change",
-     "accumulated_volume",
-     "accumulated_value"
+     "id"
     ],
-    "min_time": "2026-11-06 09:15:14",
-    "max_time": "2026-11-06 14:45:20",
-    "vol_sum": 93878100.0,
-    "ge_100k": 154,
+    "min_time": "2026-11-06 14:28:48+07:00",
+    "max_time": "2026-11-06 14:45:00+07:00",
+    "vol_sum": 1811000.0,
+    "ge_100k": 1,
+    "window_rows": [],
+    "head": [
+     {
+      "time": "2026-11-06T07:28:48.000Z",
+      "price": 13.4,
+      "volume": 200,
+      "match_type": "Buy",
+      "id": "534617942"
+     },
+     {
+      "time": "2026-11-06T07:28:48.000Z",
+      "price": 13.4,
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534617943"
+     },
+     {
+      "time": "2026-11-06T07:28:48.000Z",
+      "price": 13.4,
+      "volume": 200,
+      "match_type": "Buy",
+      "id": "534617944"
+     }
+    ],
+    "sec": 2.7
+   },
+   "vci_at_str": {
+    "len": 100,
+    "columns": [
+     "time",
+     "price",
+     "volume",
+     "match_type",
+     "id"
+    ],
+    "min_time": "2026-11-06 14:28:48+07:00",
+    "max_time": "2026-11-06 14:45:00+07:00",
+    "vol_sum": 1811000.0,
+    "ge_100k": 1,
+    "window_rows": [],
+    "head": [
+     {
+      "time": "2026-11-06T07:28:48.000Z",
+      "price": 13.4,
+      "volume": 200,
+      "match_type": "Buy",
+      "id": "534617942"
+     },
+     {
+      "time": "2026-11-06T07:28:48.000Z",
+      "price": 13.4,
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534617943"
+     },
+     {
+      "time": "2026-11-06T07:28:48.000Z",
+      "price": 13.4,
+      "volume": 200,
+      "match_type": "Buy",
+      "id": "534617944"
+     }
+    ]
+   },
+   "vci_at_epoch": {
+    "len": 100,
+    "columns": [
+     "time",
+     "price",
+     "volume",
+     "match_type",
+     "id"
+    ],
+    "min_time": "2026-11-06 13:41:45+07:00",
+    "max_time": "2026-11-06 13:41:49+07:00",
+    "vol_sum": 376700.0,
+    "ge_100k": 1,
     "window_rows": [
      {
-      "time": "2026-11-06T13:41:40.000",
+      "time": "2026-11-06T06:41:45.000Z",
       "price": 13.5,
-      "volume": 15000,
-      "match_type": "buy",
-      "id": "2026-11-06_134140_135000_15000",
-      "trading_date": "08/11/2026",
-      "symbol": "VIX",
-      "price_change": 400.0,
-      "accumulated_volume": 73269600,
-      "accumulated_value": 969468225000.0
+      "volume": 1000,
+      "match_type": "Buy",
+      "id": "534465733"
      },
      {
-      "time": "2026-11-06T13:41:40.000",
+      "time": "2026-11-06T06:41:45.000Z",
       "price": 13.5,
-      "volume": 21500,
-      "match_type": "buy",
-      "id": "2026-11-06_134140_135000_21500",
-      "trading_date": "08/11/2026",
-      "symbol": "VIX",
-      "price_change": 400.0,
-      "accumulated_volume": 73291100,
-      "accumulated_value": 969758475000.0
+      "volume": 5000,
+      "match_type": "Buy",
+      "id": "534465710"
      },
      {
-      "time": "2026-11-06T13:41:41.000",
+      "time": "2026-11-06T06:41:45.000Z",
       "price": 13.5,
-      "volume": 10600,
-      "match_type": "buy",
-      "id": "2026-11-06_134141_135000_10600",
-      "trading_date": "08/11/2026",
-      "symbol": "VIX",
-      "price_change": 400.0,
-      "accumulated_volume": 73337700,
-      "accumulated_value": 970387575000.0
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465711"
      },
      {
-      "time": "2026-11-06T13:41:41.000",
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465712"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 5500,
+      "match_type": "Buy",
+      "id": "534465713"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 10000,
+      "match_type": "Buy",
+      "id": "534465714"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 1000,
+      "match_type": "Buy",
+      "id": "534465715"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 200,
+      "match_type": "Buy",
+      "id": "534465716"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
       "price": 13.5,
       "volume": 500,
-      "match_type": "buy",
-      "id": "2026-11-06_134141_135000_500",
-      "trading_date": "08/11/2026",
-      "symbol": "VIX",
-      "price_change": 400.0,
-      "accumulated_volume": 73291600,
-      "accumulated_value": 969765225000.0
+      "match_type": "Buy",
+      "id": "534465717"
      },
      {
-      "time": "2026-11-06T13:41:41.000",
+      "time": "2026-11-06T06:41:45.000Z",
       "price": 13.5,
-      "volume": 35500,
-      "match_type": "buy",
-      "id": "2026-11-06_134141_135000_35500",
-      "trading_date": "08/11/2026",
-      "symbol": "VIX",
-      "price_change": 400.0,
-      "accumulated_volume": 73327100,
-      "accumulated_value": 970244475000.0
+      "volume": 300,
+      "match_type": "Buy",
+      "id": "534465718"
      },
      {
-      "time": "2026-11-06T13:41:42.000",
+      "time": "2026-11-06T06:41:45.000Z",
       "price": 13.5,
-      "volume": 13200,
-      "match_type": "buy",
-      "id": "2026-11-06_134142_135000_13200",
-      "trading_date": "08/11/2026",
-      "symbol": "VIX",
-      "price_change": 400.0,
-      "accumulated_volume": 73419700,
-      "accumulated_value": 971494575000.0
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465719"
      },
      {
-      "time": "2026-11-06T13:41:42.000",
+      "time": "2026-11-06T06:41:45.000Z",
       "price": 13.5,
-      "volume": 38200,
-      "match_type": "buy",
-      "id": "2026-11-06_134142_135000_38200",
-      "trading_date": "08/11/2026",
-      "symbol": "VIX",
-      "price_change": 400.0,
-      "accumulated_volume": 73406500,
-      "accumulated_value": 971316375000.0
+      "volume": 800,
+      "match_type": "Buy",
+      "id": "534465720"
      },
      {
-      "time": "2026-11-06T13:41:42.000",
+      "time": "2026-11-06T06:41:45.000Z",
       "price": 13.5,
-      "volume": 30600,
-      "match_type": "buy",
-      "id": "2026-11-06_134142_135000_30600",
-      "trading_date": "08/11/2026",
-      "symbol": "VIX",
-      "price_change": 400.0,
-      "accumulated_volume": 73368300,
-      "accumulated_value": 970800675000.0
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465721"
      },
      {
-      "time": "2026-11-06T13:41:43.000",
+      "time": "2026-11-06T06:41:45.000Z",
       "price": 13.5,
-      "volume": 33000,
-      "match_type": "buy",
-      "id": "2026-11-06_134143_135000_33000",
-      "trading_date": "08/11/2026",
-      "symbol": "VIX",
-      "price_change": 400.0,
-      "accumulated_volume": 73452700,
-      "accumulated_value": 971940075000.0
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465722"
      },
      {
-      "time": "2026-11-06T13:41:43.000",
+      "time": "2026-11-06T06:41:45.000Z",
       "price": 13.5,
-      "volume": 13000,
-      "match_type": "buy",
-      "id": "2026-11-06_134143_135000_13000",
-      "trading_date": "08/11/2026",
-      "symbol": "VIX",
-      "price_change": 400.0,
-      "accumulated_volume": 73465700,
-      "accumulated_value": 972115575000.0
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465723"
      },
      {
-      "time": "2026-11-06T13:41:43.000",
+      "time": "2026-11-06T06:41:45.000Z",
       "price": 13.5,
-      "volume": 33000,
-      "match_type": "buy",
-      "id": "2026-11-06_134143_135000_33000",
-      "trading_date": "08/11/2026",
-      "symbol": "VIX",
-      "price_change": 400.0,
-      "accumulated_volume": 73498700,
-      "accumulated_value": 972561075000.0
+      "volume": 1000,
+      "match_type": "Buy",
+      "id": "534465724"
      },
      {
-      "time": "2026-11-06T13:41:44.000",
+      "time": "2026-11-06T06:41:45.000Z",
       "price": 13.5,
-      "volume": 28300,
-      "match_type": "buy",
-      "id": "2026-11-06_134144_135000_28300",
-      "trading_date": "08/11/2026",
-      "symbol": "VIX",
-      "price_change": 400.0,
-      "accumulated_volume": 73689700,
-      "accumulated_value": 975139575000.0
+      "volume": 4200,
+      "match_type": "Buy",
+      "id": "534465725"
      },
      {
-      "time": "2026-11-06T13:41:44.000",
+      "time": "2026-11-06T06:41:45.000Z",
       "price": 13.5,
-      "volume": 18000,
-      "match_type": "buy",
-      "id": "2026-11-06_134144_135000_18000",
-      "trading_date": "08/11/2026",
-      "symbol": "VIX",
-      "price_change": 400.0,
-      "accumulated_volume": 73534800,
-      "accumulated_value": 973048425000.0
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465726"
      },
      {
-      "time": "2026-11-06T13:41:44.000",
+      "time": "2026-11-06T06:41:45.000Z",
       "price": 13.5,
-      "volume": 18100,
-      "match_type": "buy",
-      "id": "2026-11-06_134144_135000_18100",
-      "trading_date": "08/11/2026",
-      "symbol": "VIX",
-      "price_change": 400.0,
-      "accumulated_volume": 73516800,
-      "accumulated_value": 972805425000.0
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465727"
      },
      {
-      "time": "2026-11-06T13:41:44.000",
+      "time": "2026-11-06T06:41:45.000Z",
       "price": 13.5,
-      "volume": 126600,
-      "match_type": "buy",
-      "id": "2026-11-06_134144_135000_126600",
-      "trading_date": "08/11/2026",
-      "symbol": "VIX",
-      "price_change": 400.0,
-      "accumulated_volume": 73661400,
-      "accumulated_value": 974757525000.0
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465728"
      },
      {
-      "time": "2026-11-06T13:41:45.000",
+      "time": "2026-11-06T06:41:45.000Z",
       "price": 13.5,
-      "volume": 61400,
-      "match_type": "buy",
-      "id": "2026-11-06_134145_135000_61400",
-      "trading_date": "08/11/2026",
-      "symbol": "VIX",
-      "price_change": 400.0,
-      "accumulated_volume": 73751100,
-      "accumulated_value": 975968475000.0
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465729"
      },
      {
-      "time": "2026-11-06T13:41:45.000",
+      "time": "2026-11-06T06:41:45.000Z",
       "price": 13.5,
-      "volume": 53300,
-      "match_type": "buy",
-      "id": "2026-11-06_134145_135000_53300",
-      "trading_date": "08/11/2026",
-      "symbol": "VIX",
-      "price_change": 400.0,
-      "accumulated_volume": 73804400,
-      "accumulated_value": 976688025000.0
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465730"
      },
      {
-      "time": "2026-11-06T13:41:45.000",
+      "time": "2026-11-06T06:41:45.000Z",
       "price": 13.5,
-      "volume": 142400,
-      "match_type": "buy",
-      "id": "2026-11-06_134145_135000_142400",
-      "trading_date": "08/11/2026",
-      "symbol": "VIX",
-      "price_change": 400.0,
-      "accumulated_volume": 73946800,
-      "accumulated_value": 978610425000.0
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465709"
      },
      {
-      "time": "2026-11-06T13:41:46.000",
+      "time": "2026-11-06T06:41:45.000Z",
       "price": 13.5,
-      "volume": 367000,
-      "match_type": "buy",
-      "id": "2026-11-06_134146_135000_367000",
-      "trading_date": "08/11/2026",
-      "symbol": "VIX",
-      "price_change": 400.0,
-      "accumulated_volume": 74313800,
-      "accumulated_value": 983564925000.0
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465731"
      },
      {
-      "time": "2026-11-06T13:41:46.000",
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465708"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465706"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 1000,
+      "match_type": "Buy",
+      "id": "534465685"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465686"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 2000,
+      "match_type": "Buy",
+      "id": "534465687"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 1000,
+      "match_type": "Buy",
+      "id": "534465688"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 5200,
+      "match_type": "Buy",
+      "id": "534465689"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 800,
+      "match_type": "Buy",
+      "id": "534465690"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 1000,
+      "match_type": "Buy",
+      "id": "534465691"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 500,
+      "match_type": "Buy",
+      "id": "534465692"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 300,
+      "match_type": "Buy",
+      "id": "534465693"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 2300,
+      "match_type": "Buy",
+      "id": "534465694"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 300,
+      "match_type": "Buy",
+      "id": "534465695"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465696"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465697"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 500,
+      "match_type": "Buy",
+      "id": "534465698"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 3000,
+      "match_type": "Buy",
+      "id": "534465699"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465700"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465701"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465702"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 500,
+      "match_type": "Buy",
+      "id": "534465703"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 200,
+      "match_type": "Buy",
+      "id": "534465704"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 500,
+      "match_type": "Buy",
+      "id": "534465705"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465707"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 1000,
+      "match_type": "Buy",
+      "id": "534465732"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 700,
+      "match_type": "Buy",
+      "id": "534465683"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 10000,
+      "match_type": "Buy",
+      "id": "534465734"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 500,
+      "match_type": "Buy",
+      "id": "534465777"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 300,
+      "match_type": "Buy",
+      "id": "534465766"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 49800,
+      "match_type": "Buy",
+      "id": "534465763"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 192400,
+      "match_type": "Buy",
+      "id": "534465761"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 200,
+      "match_type": "Buy",
+      "id": "534465760"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 1000,
+      "match_type": "Buy",
+      "id": "534465759"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 500,
+      "match_type": "Buy",
+      "id": "534465684"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465757"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 200,
+      "match_type": "Buy",
+      "id": "534465756"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465755"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 900,
+      "match_type": "Buy",
+      "id": "534465754"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465753"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465752"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 3400,
+      "match_type": "Buy",
+      "id": "534465751"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 5000,
+      "match_type": "Buy",
+      "id": "534465750"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 600,
+      "match_type": "Buy",
+      "id": "534465758"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 500,
+      "match_type": "Buy",
+      "id": "534465748"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 300,
+      "match_type": "Buy",
+      "id": "534465749"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 2000,
+      "match_type": "Buy",
+      "id": "534465735"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 30000,
+      "match_type": "Buy",
+      "id": "534465736"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 1000,
+      "match_type": "Buy",
+      "id": "534465737"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 1000,
+      "match_type": "Buy",
+      "id": "534465738"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 300,
+      "match_type": "Buy",
+      "id": "534465740"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 500,
+      "match_type": "Buy",
+      "id": "534465739"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 200,
+      "match_type": "Buy",
+      "id": "534465742"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 5000,
+      "match_type": "Buy",
+      "id": "534465743"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465744"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 200,
+      "match_type": "Buy",
+      "id": "534465745"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 500,
+      "match_type": "Buy",
+      "id": "534465746"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 200,
+      "match_type": "Buy",
+      "id": "534465747"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465741"
+     },
+     {
+      "time": "2026-11-06T06:41:46.000Z",
+      "price": 13.5,
+      "volume": 200,
+      "match_type": "Buy",
+      "id": "534465786"
+     },
+     {
+      "time": "2026-11-06T06:41:46.000Z",
       "price": 13.5,
       "volume": 6200,
-      "match_type": "sell",
-      "id": "2026-11-06_134146_135000_6200",
-      "trading_date": "08/11/2026",
-      "symbol": "VIX",
-      "price_change": 400.0,
-      "accumulated_volume": 74320000,
-      "accumulated_value": 983648625000.0
+      "match_type": "Sell",
+      "id": "534465805"
      },
      {
-      "time": "2026-11-06T13:41:47.000",
+      "time": "2026-11-06T06:41:46.000Z",
+      "price": 13.5,
+      "volume": 200,
+      "match_type": "Buy",
+      "id": "534465788"
+     },
+     {
+      "time": "2026-11-06T06:41:46.000Z",
+      "price": 13.5,
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465787"
+     },
+     {
+      "time": "2026-11-06T06:41:46.000Z",
+      "price": 13.5,
+      "volume": 500,
+      "match_type": "Buy",
+      "id": "534465785"
+     },
+     {
+      "time": "2026-11-06T06:41:46.000Z",
+      "price": 13.5,
+      "volume": 500,
+      "match_type": "Buy",
+      "id": "534465780"
+     },
+     {
+      "time": "2026-11-06T06:41:46.000Z",
+      "price": 13.5,
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465783"
+     },
+     {
+      "time": "2026-11-06T06:41:46.000Z",
+      "price": 13.5,
+      "volume": 200,
+      "match_type": "Buy",
+      "id": "534465782"
+     },
+     {
+      "time": "2026-11-06T06:41:46.000Z",
+      "price": 13.5,
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465781"
+     },
+     {
+      "time": "2026-11-06T06:41:46.000Z",
+      "price": 13.5,
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465779"
+     },
+     {
+      "time": "2026-11-06T06:41:46.000Z",
+      "price": 13.5,
+      "volume": 1000,
+      "match_type": "Buy",
+      "id": "534465778"
+     },
+     {
+      "time": "2026-11-06T06:41:46.000Z",
+      "price": 13.5,
+      "volume": 1000,
+      "match_type": "Buy",
+      "id": "534465784"
+     },
+     {
+      "time": "2026-11-06T06:41:47.000Z",
       "price": 13.55,
-      "volume": 3100,
-      "match_type": "buy",
-      "id": "2026-11-06_134147_135500_3100",
-      "trading_date": "08/11/2026",
-      "symbol": "VIX",
-      "price_change": 450.0,
-      "accumulated_volume": 74323100,
-      "accumulated_value": 983690630000.0
+      "volume": 3000,
+      "match_type": "Buy",
+      "id": "534465866"
      },
      {
-      "time": "2026-11-06T13:41:47.000",
+      "time": "2026-11-06T06:41:47.000Z",
+      "price": 13.55,
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534465869"
+     },
+     {
+      "time": "2026-11-06T06:41:47.000Z",
       "price": 13.5,
       "volume": 200,
-      "match_type": "sell",
-      "id": "2026-11-06_134147_135000_200",
-      "trading_date": "08/11/2026",
-      "symbol": "VIX",
-      "price_change": 400.0,
-      "accumulated_volume": 74323300,
-      "accumulated_value": 983693330000.0
+      "match_type": "Sell",
+      "id": "534465913"
      },
      {
-      "time": "2026-11-06T13:41:48.000",
+      "time": "2026-11-06T06:41:48.000Z",
       "price": 13.5,
-      "volume": 3200,
-      "match_type": "sell",
-      "id": "2026-11-06_134148_135000_3200",
-      "trading_date": "08/11/2026",
-      "symbol": "VIX",
-      "price_change": 400.0,
-      "accumulated_volume": 74326500,
-      "accumulated_value": 983736530000.0
+      "volume": 3000,
+      "match_type": "Sell",
+      "id": "534465969"
      },
      {
-      "time": "2026-11-06T13:41:49.000",
+      "time": "2026-11-06T06:41:48.000Z",
+      "price": 13.5,
+      "volume": 200,
+      "match_type": "Sell",
+      "id": "534465976"
+     },
+     {
+      "time": "2026-11-06T06:41:49.000Z",
       "price": 13.5,
       "volume": 400,
-      "match_type": "sell",
-      "id": "2026-11-06_134149_135000_400",
-      "trading_date": "08/11/2026",
-      "symbol": "VIX",
-      "price_change": 400.0,
-      "accumulated_volume": 74326900,
-      "accumulated_value": 983741930000.0
+      "match_type": "Sell",
+      "id": "534465998"
      }
     ],
     "head": [
      {
-      "time": "2026-11-06T09:15:14.000",
-      "price": 12.9,
-      "volume": 2389700,
-      "match_type": "ato",
-      "id": "2026-11-06_091514_129000_2389700",
-      "trading_date": "08/11/2026",
-      "symbol": "VIX",
-      "price_change": -200.0,
-      "accumulated_volume": 2389700,
-      "accumulated_value": 30827130000.0
-     },
-     {
-      "time": "2026-11-06T09:15:15.000",
-      "price": 12.9,
-      "volume": 17300,
-      "match_type": "buy",
-      "id": "2026-11-06_091515_129000_17300",
-      "trading_date": "08/11/2026",
-      "symbol": "VIX",
-      "price_change": -200.0,
-      "accumulated_volume": 2412400,
-      "accumulated_value": 31119910000.0
-     },
-     {
-      "time": "2026-11-06T09:15:15.000",
-      "price": 12.9,
-      "volume": 400,
-      "match_type": "buy",
-      "id": "2026-11-06_091515_129000_400",
-      "trading_date": "08/11/2026",
-      "symbol": "VIX",
-      "price_change": -200.0,
-      "accumulated_volume": 2395100,
-      "accumulated_value": 30896740000.0
-     }
-    ],
-    "sec": 7.3
-   },
-   "vci_ps30000": {
-    "len": 100,
-    "columns": [
-     "time",
-     "price",
-     "volume",
-     "match_type",
-     "id"
-    ],
-    "min_time": "2026-11-06 14:28:48+07:00",
-    "max_time": "2026-11-06 14:45:00+07:00",
-    "vol_sum": 1811000.0,
-    "ge_100k": 1,
-    "window_rows": [],
-    "head": [
-     {
-      "time": "2026-11-06T07:28:48.000Z",
-      "price": 13.4,
-      "volume": 200,
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 1000,
       "match_type": "Buy",
-      "id": "534617942"
+      "id": "534465733"
      },
      {
-      "time": "2026-11-06T07:28:48.000Z",
-      "price": 13.4,
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
+      "volume": 5000,
+      "match_type": "Buy",
+      "id": "534465710"
+     },
+     {
+      "time": "2026-11-06T06:41:45.000Z",
+      "price": 13.5,
       "volume": 100,
       "match_type": "Buy",
-      "id": "534617943"
-     },
-     {
-      "time": "2026-11-06T07:28:48.000Z",
-      "price": 13.4,
-      "volume": 200,
-      "match_type": "Buy",
-      "id": "534617944"
+      "id": "534465711"
      }
-    ],
-    "sec": 2.8
-   },
-   "vci_ps10000": {
-    "len": 100,
-    "columns": [
-     "time",
-     "price",
-     "volume",
-     "match_type",
-     "id"
-    ],
-    "min_time": "2026-11-06 14:28:48+07:00",
-    "max_time": "2026-11-06 14:45:00+07:00",
-    "vol_sum": 1811000.0,
-    "ge_100k": 1,
-    "window_rows": [],
-    "head": [
-     {
-      "time": "2026-11-06T07:28:48.000Z",
-      "price": 13.4,
-      "volume": 200,
-      "match_type": "Buy",
-      "id": "534617942"
-     },
-     {
-      "time": "2026-11-06T07:28:48.000Z",
-      "price": 13.4,
-      "volume": 100,
-      "match_type": "Buy",
-      "id": "534617943"
-     },
-     {
-      "time": "2026-11-06T07:28:48.000Z",
-      "price": 13.4,
-      "volume": 200,
-      "match_type": "Buy",
-      "id": "534617944"
-     }
-    ],
-    "sec": 1.4
-   },
-   "vci_ps5000": {
-    "len": 100,
-    "columns": [
-     "time",
-     "price",
-     "volume",
-     "match_type",
-     "id"
-    ],
-    "min_time": "2026-11-06 14:28:48+07:00",
-    "max_time": "2026-11-06 14:45:00+07:00",
-    "vol_sum": 1811000.0,
-    "ge_100k": 1,
-    "window_rows": [],
-    "head": [
-     {
-      "time": "2026-11-06T07:28:48.000Z",
-      "price": 13.4,
-      "volume": 200,
-      "match_type": "Buy",
-      "id": "534617942"
-     },
-     {
-      "time": "2026-11-06T07:28:48.000Z",
-      "price": 13.4,
-      "volume": 100,
-      "match_type": "Buy",
-      "id": "534617943"
-     },
-     {
-      "time": "2026-11-06T07:28:48.000Z",
-      "price": 13.4,
-      "volume": 200,
-      "match_type": "Buy",
-      "id": "534617944"
-     }
-    ],
-    "sec": 1.0
-   },
-   "vci_ps1000": {
-    "len": 100,
-    "columns": [
-     "time",
-     "price",
-     "volume",
-     "match_type",
-     "id"
-    ],
-    "min_time": "2026-11-06 14:28:48+07:00",
-    "max_time": "2026-11-06 14:45:00+07:00",
-    "vol_sum": 1811000.0,
-    "ge_100k": 1,
-    "window_rows": [],
-    "head": [
-     {
-      "time": "2026-11-06T07:28:48.000Z",
-      "price": 13.4,
-      "volume": 200,
-      "match_type": "Buy",
-      "id": "534617942"
-     },
-     {
-      "time": "2026-11-06T07:28:48.000Z",
-      "price": 13.4,
-      "volume": 100,
-      "match_type": "Buy",
-      "id": "534617943"
-     },
-     {
-      "time": "2026-11-06T07:28:48.000Z",
-      "price": 13.4,
-      "volume": 200,
-      "match_type": "Buy",
-      "id": "534617944"
-     }
-    ],
-    "sec": 0.8
+    ]
    },
    "vci_paged": {
-    "error": "Traceback (most recent call last):\n  File \"/home/runner/work/cuulv-stock/cuulv-stock/mcdx/probe_intraday.py\", line 135, in compare\n    if last is not None and new_last >= pd.to_datetime(last):\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"pandas/_libs/tslibs/timestamps.pyx\", line 387, in pandas._libs.tslibs.timestamps._Timestamp.__richcmp__\nTypeError: Cannot compare tz-naive and tz-aware timestamps\n"
+    "len": 100,
+    "columns": [
+     "time",
+     "price",
+     "volume",
+     "match_type",
+     "id"
+    ],
+    "min_time": "2026-11-06 14:28:48",
+    "max_time": "2026-11-06 14:45:00",
+    "vol_sum": 1811000.0,
+    "ge_100k": 1,
+    "window_rows": [],
+    "head": [
+     {
+      "time": "2026-11-06T14:28:48.000",
+      "price": 13.4,
+      "volume": 200,
+      "match_type": "Buy",
+      "id": "534617942"
+     },
+     {
+      "time": "2026-11-06T14:28:48.000",
+      "price": 13.4,
+      "volume": 100,
+      "match_type": "Buy",
+      "id": "534617943"
+     },
+     {
+      "time": "2026-11-06T14:28:48.000",
+      "price": 13.4,
+      "volume": 200,
+      "match_type": "Buy",
+      "id": "534617944"
+     }
+    ],
+    "calls": 2,
+    "sec": 2.4
    }
   }
  }
