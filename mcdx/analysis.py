@@ -47,7 +47,8 @@ def build_frames(prices: pd.DataFrame, symbols: list[str]):
 
 
 def compute(prices: pd.DataFrame, universe: dict[str, list[str]], sectors: dict[str, str], holdings: list[str],
-            fund: dict | None = None, names: dict | None = None) -> dict:
+            fund: dict | None = None, names: dict | None = None, big: dict | None = None,
+            big_hist: list | None = None) -> dict:
     basket_of = {s: b for b, syms in universe.items() for s in syms}
     symbols = sorted(basket_of)
     dates, F = build_frames(prices, symbols)
@@ -266,6 +267,32 @@ def compute(prices: pd.DataFrame, universe: dict[str, list[str]], sectors: dict[
             import logging
             logging.getLogger("mcdx").warning("Không phân tích được %s: %s", s, e)
 
+    # ---- lệnh khớp lớn (chỉ dùng khi đúng phiên đang hiển thị)
+    big_out = None
+    if big and big.get("date") == dates[t].isoformat():
+        bs = {k: v for k, v in (big.get("by_sym") or {}).items() if k in basket_of}
+        scanned = set(big.get("scanned_syms") or [])
+        for s in symbols:
+            if s in analyses and s in scanned:
+                analyses[s]["big"] = bs.get(s) or {"sym": s, "buy_n": 0, "sell_n": 0, "trades": []}
+                analyses[s]["big"]["threshold"] = big["threshold"]
+        rows = sorted(({k: v for k, v in r.items() if k != "trades"} for r in bs.values()),
+                      key=lambda r: -(r["buy_val"] + r["sell_val"]))
+        trades = sorted(({**tr, "sym": r["sym"], "val": round(tr["p"] * tr["v"] / 1e9, 2)} for r in bs.values() for tr in r["trades"]),
+                        key=lambda x: -x["val"])[:15]
+        big_out = {"date": big["date"], "threshold": big["threshold"], "scanned": big.get("scanned"), "total": big.get("total"),
+                   "updated": big.get("updated"), "rows": rows[:40], "top_trades": trades,
+                   "n_syms": len(bs), "buy_val": round(sum(r["buy_val"] for r in rows), 1),
+                   "sell_val": round(sum(r["sell_val"] for r in rows), 1)}
+
+    # lệnh lớn theo từng phiên (tối đa 5 phiên đã quét, không sau phiên đang hiển thị)
+    hist = [h for h in (big_hist or []) if h.get("date", "") <= dates[t].isoformat()]
+    if hist:
+        from .bigorders import symbol_history
+        for s in symbols:
+            if s in analyses:
+                analyses[s]["big_hist"] = {"threshold": hist[0].get("threshold"), "days": symbol_history(hist, s)}
+
     W = 60
     tail = slice(max(0, t - W + 1), t + 1)
     ds = [d.isoformat() for d in dates[tail]]
@@ -300,6 +327,7 @@ def compute(prices: pd.DataFrame, universe: dict[str, list[str]], sectors: dict[
                   "top5": [{**rec(r), "parts": {k: round(float(r["p_" + k]), 1) for k in ["mcdx", "rs", "sector", "volume", "base"]}} for _, r in top5.iterrows()],
                   "out": list(R[R.liquid & (((b5.iloc[t].reindex(R.index) >= 5) & (R.d5 <= -5)) | ((R.b1 > 0.5) & (R.b <= 0.5)))].sym)},
         "exits": exits,
+        "big": big_out,
         "params": {"sustain_min": SUSTAIN_MIN_STREAK, "sustain_max_gain": SUSTAIN_MAX_GAIN},
         "checks": checks,
         "analysis": analyses,

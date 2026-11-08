@@ -206,8 +206,23 @@ def main():
             prio = [s for b in ("VN30", "MID", "SMALL") for s in uni.get(b, [])]
             signal = store.read_json(store.DATA / "signal_syms.json", [])
             fund = fundamentals.refresh(prio, signal, budget, today, seconds=minutes * 60)
+    # Lệnh khớp lớn trong phiên (≥ 100.000 cổ)
+    big = {}
+    if not args.demo and hasattr(client, "ticks"):
+        from . import bigorders
+        minutes = float(os.environ.get("BIG_MINUTES", "25") or 0)
+        if minutes > 0:
+            syms = [s for b in BASKETS for s in uni.get(b, [])]
+            session = max(prices[prices["symbol"].isin(syms)]["date"])
+            first = store.load_holdings() + store.read_json(store.DATA / "signal_syms.json", [])
+            big = bigorders.scan(client, bigorders.priority(prices, syms, first), minutes, session)
+    big_hist = []
+    if not args.demo:
+        from . import bigorders
+        big = big or bigorders.load_latest()
+        big_hist = bigorders.load_hist(5)
     report = compute(prices, uni, store.load_sectors(), store.load_holdings(), fund=fund,
-                     names=store.read_json(store.DATA / "names.json", {}))
+                     names=store.read_json(store.DATA / "names.json", {}), big=big, big_hist=big_hist)
     # mã đang có tín hiệu → ưu tiên làm mới báo cáo tài chính ở lần chạy sau
     sig = list(dict.fromkeys([t["sym"] for t in report["lists"]["top5"]] + report["lists"]["sustain"][:10]
                              + [s for v in report["lists"]["new"].values() for s in v[:10]]))

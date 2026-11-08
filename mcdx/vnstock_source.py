@@ -235,6 +235,29 @@ class VnstockClient:
                 log.info("Tải từng mã %d/%d", i, len(slow))
         return rows
 
+    def ticks(self, symbol: str) -> pd.DataFrame | None:
+        """Toàn bộ giao dịch khớp trong phiên gần nhất: time, price (đồng), volume (cổ), side (buy/sell/ato/atc)."""
+        frames, page = [], 1
+        while page <= 5:
+            df = self._call(lambda: self._Quote(symbol).intraday(page_size=50000, page=page))
+            if df is None or len(df) == 0:
+                break
+            frames.append(df)
+            if len(df) < 50000:
+                break
+            page += 1
+        if not frames:
+            return None
+        df = pd.concat(frames, ignore_index=True)
+        if "id" in df.columns:
+            df = df.drop_duplicates("id")
+        out = pd.DataFrame({"time": pd.to_datetime(df["time"]), "price": pd.to_numeric(df["price"], errors="coerce"),
+                            "volume": pd.to_numeric(df["volume"], errors="coerce"),
+                            "side": df["match_type"].astype(str).str.lower()}).dropna(subset=["price", "volume"])
+        if len(out) and out["price"].median() < 1000:  # KBS trả giá theo nghìn đồng
+            out["price"] = out["price"] * 1000
+        return out.sort_values("time")
+
     def names(self) -> dict[str, str]:
         """Tên doanh nghiệp theo mã."""
         try:

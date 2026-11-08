@@ -140,6 +140,15 @@ svg text{font-family:var(--f-num);fill:var(--ink-3);font-size:10.5px}
 .sheet-head .big{font-family:var(--f-num);font-size:26px;font-weight:500}
 .btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:6px 12px;font:inherit;cursor:pointer}
 .btn:hover{background:var(--surface-2)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--ink-2);font:inherit;font-size:12px;padding:5px 10px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.seg button:disabled{color:var(--ink-3);cursor:default;opacity:.5}
+.side{display:inline-block;font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px}
+.side.buy{background:var(--good-soft);color:var(--good)} .side.sell{background:var(--bad-soft);color:var(--bad)}
+.bigsum{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--ink-2);margin:0 0 10px}
+.bigsum b{font-family:var(--f-num);font-weight:600}
 .btn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .verdict{display:flex;flex-wrap:wrap;gap:8px}
 .fnet{display:flex;align-items:center;gap:6px;justify-content:flex-end}
@@ -277,6 +286,17 @@ footer{font-size:12px;color:var(--ink-3);line-height:1.6;max-width:80ch}
     <div class="panel-head"><h2 id="hSus">Top 10 dòng tiền lớn duy trì</h2><span class="faint small" id="cSus"></span></div>
     <div class="tbl-wrap"><table><thead><tr><th class="l">#</th><th class="l">Mã</th><th class="l">Rổ</th><th>Chuỗi duy trì</th><th>Banker TB</th><th>Banker</th><th>Giá · %</th><th>Giá trong chuỗi</th><th>Trên MA20</th><th>RS</th><th>Ngoại 5p</th><th class="l">Banker 20 phiên</th></tr></thead><tbody id="tSus"></tbody></table></div>
     <p class="note">Banker &gt; 0 và Banker ≥ MA10 liên tục từ <span id="susMin">3</span> phiên, giá trên MA20; loại mã đã tăng quá 25% trong chuỗi. Xếp theo số phiên × Banker trung bình. Nhãn "Tăng nóng" khi giá cao hơn MA20 trên 10%.</p>
+  </section>
+
+  <section class="panel" aria-labelledby="hBig" id="pBig">
+    <div class="panel-head"><h2 id="hBig">Lệnh khớp lớn ≥ <span id="bigTh">100.000</span> cổ</h2><span class="faint small" id="cBig"></span></div>
+    <p class="bigsum" id="bigSum"></p>
+    <div class="panel-head" style="margin-top:4px"><h3>Theo mã</h3>
+      <div class="seg" role="group" aria-label="Sắp xếp lệnh lớn"><button type="button" data-bigsort="total" aria-pressed="true">Tổng giá trị</button><button type="button" data-bigsort="buy" aria-pressed="false">Mua ròng</button><button type="button" data-bigsort="sell" aria-pressed="false">Bán ròng</button></div></div>
+    <div class="tbl-wrap"><table><thead><tr><th class="l">#</th><th class="l">Mã</th><th>Mua chủ động lớn</th><th>Bán chủ động lớn</th><th>Ròng (cổ)</th><th>Ròng (tỷ)</th><th>% KL phiên</th><th>Giá · %</th><th>Banker</th></tr></thead><tbody id="tBig"></tbody></table></div>
+    <h3 style="margin-top:16px">Giao dịch lớn nhất phiên</h3>
+    <div class="tbl-wrap"><table><thead><tr><th class="l">Giờ</th><th class="l">Mã</th><th class="l">Chiều</th><th>Giá</th><th>Khối lượng</th><th>Giá trị (tỷ)</th></tr></thead><tbody id="tBigT"></tbody></table></div>
+    <p class="note">Mỗi dòng là một giao dịch khớp lệnh liên tục có khối lượng từ ngưỡng trở lên. "Mua chủ động" là bên mua chấp nhận giá bán (thường thể hiện nhu cầu mua mạnh), "Bán chủ động" ngược lại. Không tính khớp lệnh định kỳ ATO/ATC vì đó là tổng nhiều lệnh. Một lệnh đặt lớn có thể khớp thành nhiều giao dịch nhỏ nên con số này chỉ phản ánh phần khớp lớn. "% KL phiên" = khối lượng khớp lớn / tổng khối lượng khớp của mã. Dữ liệu từ vnstock (KBS); mỗi lần cập nhật quét lần lượt các mã đang nắm giữ, đang có tín hiệu, rồi theo thanh khoản cho đến hết thời gian cho phép.</p>
   </section>
 
   <section class="panel" aria-labelledby="hQual" id="pQual">
@@ -440,6 +460,30 @@ $("tSus").innerHTML=D.lists.sustain.slice(0,10).map((s,i)=>{const x=R[s];return 
   <td class="${cls(x.streak_gain)}">${sgn(x.streak_gain,f1)}%</td><td>${sgn(x.ext,f1)}%</td><td>${f0(x.rs)}</td>
   <td class="${cls(x.f5)}">${sgn(x.f5,f1)}</td><td class="l">${spark(s,120)}</td></tr>`}).join("")||`<tr><td colspan="12" class="empty">Chưa có mã duy trì đủ ${SUS} phiên.</td></tr>`;
 
+/* lệnh lớn */
+(()=>{const B=D.big;if(!B){$("pBig").hidden=true;return}
+  const th=nf(B.threshold,0);$("bigTh").textContent=th;
+  $("cBig").textContent=`phiên ${fullD(B.date)} · đã quét ${B.scanned}/${B.total} mã${B.updated?" · cập nhật "+B.updated:""}`;
+  $("bigSum").innerHTML=`<span><b>${B.n_syms}</b> mã có lệnh lớn</span><span>Mua chủ động lớn <b class="up">${nf(B.buy_val,1)} tỷ</b></span><span>Bán chủ động lớn <b class="down">${nf(B.sell_val,1)} tỷ</b></span><span>Ròng <b class="${cls(B.buy_val-B.sell_val)}">${sgn(B.buy_val-B.sell_val,f1)} tỷ</b></span>`;
+  const big=v=>v>=1e6?nf(v/1e6,2)+" tr":nf(v,0);
+  function render(mode){
+    let rows=B.rows.filter(r=>R[r.sym]);
+    if(mode==="buy")rows=rows.filter(r=>r.net_val>0).sort((a,b)=>b.net_val-a.net_val);
+    else if(mode==="sell")rows=rows.filter(r=>r.net_val<0).sort((a,b)=>a.net_val-b.net_val);
+    $("tBig").innerHTML=rows.slice(0,15).map((r,i)=>{const x=R[r.sym];return `<tr class="click" tabindex="0" data-sym="${r.sym}">
+      <td class="l rank">${i+1}</td><td class="l sym">${heart(r.sym)}${r.sym}<small>${x.sector}</small></td>
+      <td>${r.buy_n?`${r.buy_n} lệnh<small class="chg up">${big(r.buy_vol)} · ${nf(r.buy_val,1)} tỷ</small>`:"–"}</td>
+      <td>${r.sell_n?`${r.sell_n} lệnh<small class="chg down">${big(r.sell_vol)} · ${nf(r.sell_val,1)} tỷ</small>`:"–"}</td>
+      <td class="${cls(r.net_vol)}">${r.net_vol>0?"+":""}${big(r.net_vol)}</td><td class="${cls(r.net_val)}">${sgn(r.net_val,f1)}</td>
+      <td>${f1(r.share)}%</td>${priceCell(x)}<td>${f1(x.b)}</td></tr>`}).join("")||`<tr><td colspan="9" class="empty">Không có mã phù hợp.</td></tr>`}
+  render("total");
+  document.querySelectorAll("[data-bigsort]").forEach(b=>b.addEventListener("click",()=>{
+    document.querySelectorAll("[data-bigsort]").forEach(o=>o.setAttribute("aria-pressed",o===b?"true":"false"));render(b.dataset.bigsort)}));
+  $("tBigT").innerHTML=B.top_trades.filter(t=>R[t.sym]).map(t=>`<tr class="click" tabindex="0" data-sym="${t.sym}">
+    <td class="l">${t.t}</td><td class="l sym">${t.sym}</td><td class="l"><span class="side ${t.side}">${t.side==="buy"?"Mua chủ động":"Bán chủ động"}</span></td>
+    <td>${price(t.p)}</td><td>${nf(t.v,0)}</td><td>${nf(t.val,2)}</td></tr>`).join("")||`<tr><td colspan="6" class="empty">Không có giao dịch lớn.</td></tr>`;
+})();
+
 /* doanh nghiệp tốt */
 (()=>{const Q=D.lists.quality||[],n=D.lists.quality_n||{};
   if(!D.has_analysis){$("pQual").hidden=true;return}
@@ -555,7 +599,7 @@ async function toggleAnalysis(sym){
   if(!box.hidden){box.hidden=true;btn.setAttribute("aria-expanded","false");btn.textContent="Phân tích";return}
   box.hidden=false;btn.setAttribute("aria-expanded","true");btn.textContent="Ẩn phân tích";
   if(!ANA[sym]){box.innerHTML='<p class="muted">Đang tải phân tích…</p>';
-    try{const r=await fetch(`analysis/${sym}.json`,{cache:"no-cache"});if(!r.ok)throw new Error(r.status);ANA[sym]=await r.json()}
+    try{await getAna(sym)}
     catch(e){box.innerHTML='<p class="muted">Chưa có bản phân tích cho mã này. Bản phân tích được tạo ở lần cập nhật kế tiếp.</p>';return}}
   box.innerHTML=renderAnalysis(ANA[sym]);box.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});
 }
@@ -706,9 +750,40 @@ function openDetail(sym){
    <section class="panel"><h3>Biến động 5 phiên gần nhất</h3><div class="tbl-wrap"><table>
      <thead><tr><th class="l">Ngày</th><th>Giá</th><th>%</th><th>KL (nghìn cp)</th><th>KL/TB20</th><th>Banker</th><th>Δ Banker</th><th>Hot Money</th><th>Khối ngoại ròng (tỷ)</th></tr></thead>
      <tbody>${rows.map(r=>`<tr><td class="l">${fullD(r.d)}</td><td>${price(r.p)}</td><td class="${cls(r.c)}">${sgn(r.c)}%</td><td>${f0(r.v/1000)}</td><td>${r.vr==null?"–":f2(r.vr)+"×"}</td><td><b>${f1(r.b)}</b></td><td class="${cls(r.db)}">${sgn(r.db,f1)}</td><td>${f1(r.h)}</td>
-       <td>${r.f==null?"–":`<div class="fnet"><span class="${cls(r.f)}">${sgn(r.f)}</span><span class="b"><i style="${r.f>=0?`left:50%;width:${50*r.f/fmax}%;background:var(--good)`:`right:50%;width:${50*-r.f/fmax}%;background:var(--bad)`}"></i></span></div>`}</td></tr>`).join("")}</tbody></table></div></section>`;
+       <td>${r.f==null?"–":`<div class="fnet"><span class="${cls(r.f)}">${sgn(r.f)}</span><span class="b"><i style="${r.f>=0?`left:50%;width:${50*r.f/fmax}%;background:var(--good)`:`right:50%;width:${50*-r.f/fmax}%;background:var(--bad)`}"></i></span></div>`}</td></tr>`).join("")}</tbody></table></div></section>
+   ${D.has_analysis?'<section class="panel" id="bigBox" aria-live="polite"><h3>Lệnh khớp lớn</h3><p class="muted small">Đang tải…</p></section>':''}`;
   $("overlay").hidden=false;mcdxChart($("dChart"),sym);$("closeBtn").focus();$("closeBtn").onclick=closeDetail;
   if($("anaBtn"))$("anaBtn").onclick=()=>toggleAnalysis(sym);
+  if($("bigBox"))loadBig(sym);
+}
+async function getAna(sym){if(!ANA[sym]){const r=await fetch(`analysis/${sym}.json`,{cache:"no-cache"});if(!r.ok)throw new Error(r.status);ANA[sym]=await r.json()}return ANA[sym]}
+async function loadBig(sym){
+  const box=$("bigBox");let a;
+  try{a=await getAna(sym)}catch(e){box.innerHTML='<h3>Lệnh khớp lớn</h3><p class="muted small">Chưa có dữ liệu.</p>';return}
+  if(!box.isConnected)return;
+  const H=a.big_hist,th=H?nf(H.threshold,0):"100.000";
+  const days=(H&&H.days)||[];
+  if(!days.length){box.innerHTML=`<h3>Lệnh khớp lớn ≥ ${th} cổ</h3><p class="muted small">Chưa có dữ liệu khớp lệnh. Dữ liệu được thu thập từ lần cập nhật kế tiếp.</p>`;return}
+  const vol=v=>v>=1e6?nf(v/1e6,2)+" tr":nf(v,0);
+  const sum=`<div class="tbl-wrap"><table><thead><tr><th class="l">Ngày</th><th>Mua chủ động lớn</th><th>Bán chủ động lớn</th><th>Ròng (cổ)</th><th>Ròng (tỷ)</th><th>% KL phiên</th></tr></thead><tbody>${days.map((d,i)=>!d.scanned
+      ?`<tr><td class="l">${fullD(d.date)}</td><td colspan="5" class="faint" style="text-align:left;font-family:var(--f-body)">Chưa quét tới mã này trong phiên</td></tr>`
+      :`<tr class="click" tabindex="0" data-bigday="${i}"><td class="l">${fullD(d.date)}</td>
+        <td>${d.buy_n?`${d.buy_n} lệnh<small class="chg up">${vol(d.buy_vol)} · ${nf(d.buy_val,1)} tỷ</small>`:"–"}</td>
+        <td>${d.sell_n?`${d.sell_n} lệnh<small class="chg down">${vol(d.sell_vol)} · ${nf(d.sell_val,1)} tỷ</small>`:"–"}</td>
+        <td class="${cls(d.net_vol)}">${d.net_vol?(d.net_vol>0?"+":"")+vol(d.net_vol):"0"}</td><td class="${cls(d.net_val)}">${sgn(d.net_val,f1)}</td><td>${f1(d.share)}%</td></tr>`).join("")}</tbody></table></div>`;
+  const first=days.findIndex(d=>d.scanned&&(d.buy_n||d.sell_n));
+  box.innerHTML=`<div class="panel-head"><h3>Lệnh khớp lớn ≥ ${th} cổ · ${days.length} phiên</h3></div>${sum}
+    <div class="panel-head" style="margin-top:14px"><h3 id="bigDayT"></h3><div class="seg" role="group" aria-label="Chọn phiên">${days.map((d,i)=>`<button type="button" data-bigbtn="${i}" aria-pressed="false" ${d.scanned?"":"disabled"}>${fullD(d.date).slice(0,5)}</button>`).join("")}</div></div>
+    <div id="bigDay"></div>
+    <p class="note">Mỗi dòng là một giao dịch khớp lệnh liên tục từ ${th} cổ trở lên. Mua chủ động: bên mua chấp nhận giá bán; bán chủ động: bên bán chấp nhận giá mua. Không tính khớp định kỳ ATO/ATC. Một lệnh đặt lớn có thể khớp thành nhiều giao dịch nhỏ nên đây chỉ là phần khớp lớn.</p>`;
+  const show=i=>{const d=days[i];if(!d||!d.scanned)return;
+    box.querySelectorAll("[data-bigbtn]").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.bigbtn===i?"true":"false"));
+    $("bigDayT").textContent=`Chi tiết phiên ${fullD(d.date)}`;
+    $("bigDay").innerHTML=d.trades&&d.trades.length?`<div class="tbl-wrap"><table><thead><tr><th class="l">Giờ</th><th class="l">Chiều</th><th>Giá</th><th>Khối lượng</th><th>Giá trị (tỷ)</th></tr></thead><tbody>${d.trades.map(t=>`<tr><td class="l">${t.t}</td><td class="l"><span class="side ${t.side}">${t.side==="buy"?"Mua chủ động":"Bán chủ động"}</span></td><td>${price(t.p)}</td><td>${nf(t.v,0)}</td><td>${nf(t.p*t.v/1e9,2)}</td></tr>`).join("")}</tbody></table></div>${(d.buy_n+d.sell_n)>d.trades.length?`<p class="ana-note">Hiển thị ${d.trades.length} giao dịch lớn nhất trong ${d.buy_n+d.sell_n} giao dịch.</p>`:""}`
+      :`<p class="muted small">Không có giao dịch nào từ ${th} cổ trở lên trong phiên này.</p>`};
+  box.querySelectorAll("[data-bigbtn]").forEach(b=>b.addEventListener("click",()=>show(+b.dataset.bigbtn)));
+  box.querySelectorAll("[data-bigday]").forEach(r=>{r.addEventListener("click",()=>show(+r.dataset.bigday));r.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();show(+r.dataset.bigday)}})});
+  show(first>=0?first:days.findIndex(d=>d.scanned));
 }
 function closeDetail(){$("overlay").hidden=true;if(lastFocus)lastFocus.focus()}
 $("overlay").addEventListener("click",e=>{if(e.target.id==="overlay"||e.target.closest('a[href^="#"]')){$("overlay").hidden=true}});
