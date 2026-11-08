@@ -102,7 +102,7 @@ def compare(symbols, t_from="13:41:40", t_to="13:41:50"):
         try:
             from vnstock.explorer.kbs.quote import Quote
             t0 = time.time()
-            df = Quote(s).intraday(page_size=50000, get_all=True)
+            df = Quote(s).intraday(page_size=50000, get_all=True) if False else None
             r["kbs"] = summarize_df(df, t_from, t_to)
             r["kbs"]["sec"] = round(time.time() - t0, 1)
         except Exception:
@@ -110,7 +110,7 @@ def compare(symbols, t_from="13:41:40", t_to="13:41:50"):
         time.sleep(3.5)
         # VCI: thử nhiều cỡ trang, rồi phân trang ngược theo thời gian
         from vnstock.explorer.vci.quote import Quote as VQ
-        for ps in (30000, 10000, 5000, 1000):
+        for ps in (100,):
             key = f"vci_ps{ps}"
             try:
                 t0 = time.time()
@@ -120,24 +120,37 @@ def compare(symbols, t_from="13:41:40", t_to="13:41:50"):
             except Exception:
                 r[key] = {"error": traceback.format_exc()[-1500:]}
             time.sleep(3.5)
-        # VCI phân trang bằng last_time
+        # VCI: lấy 100 dòng quanh mốc giờ (thử truncTime theo chuỗi và epoch), rồi phân trang cả phiên
+        def naive(x):
+            x = pd.to_datetime(x)
+            return x.dt.tz_localize(None) if getattr(x.dt, "tz", None) is not None else x
+        for label, lt in (("vci_at_str", "2026-11-06 13:41:50"), ("vci_at_epoch", int(pd.Timestamp("2026-11-06 13:41:50", tz="Asia/Ho_Chi_Minh").timestamp()))):
+            try:
+                df = VQ(s).intraday(page_size=100, last_time=lt)
+                r[label] = summarize_df(df, "13:41:40", "13:41:50")
+            except Exception:
+                r[label] = {"error": traceback.format_exc()[-1200:]}
+            time.sleep(3.5)
         try:
             frames, last, calls = [], None, 0
             t0 = time.time()
-            while calls < 200:
-                df = VQ(s).intraday(page_size=30000, last_time=last) if last is not None else VQ(s).intraday(page_size=30000)
+            while calls < 400:
+                df = VQ(s).intraday(page_size=100, last_time=last) if last is not None else VQ(s).intraday(page_size=100)
                 calls += 1
                 if df is None or len(df) == 0:
                     break
                 frames.append(df)
-                tcol = "time" if "time" in df.columns else df.columns[0]
-                new_last = pd.to_datetime(df[tcol]).min()
-                if last is not None and new_last >= pd.to_datetime(last):
+                tmin = naive(df["time"]).min()
+                if last is not None and tmin >= pd.Timestamp(last):
                     break
-                last = new_last.strftime("%Y-%m-%d %H:%M:%S")
-                time.sleep(1.2)
+                last = tmin.strftime("%Y-%m-%d %H:%M:%S")
+                if tmin.strftime("%H:%M:%S") <= "09:15:30":
+                    break
+                time.sleep(0.4)
             if frames:
                 all_df = pd.concat(frames, ignore_index=True)
+                all_df["time"] = naive(all_df["time"])
+                all_df = all_df.drop_duplicates()
                 r["vci_paged"] = summarize_df(all_df, t_from, t_to)
                 r["vci_paged"].update(calls=calls, sec=round(time.time() - t0, 1))
         except Exception:
