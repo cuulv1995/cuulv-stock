@@ -24,7 +24,7 @@ jobs:
           VNSTOCK_DISABLE_AGENT_SETUP: "1"
         run: |
           pip install -r requirements.txt
-          pip install --extra-index-url https://vnstocks.com/api/simple vnstock vnai
+          bash scripts/install_vnstock.sh
       - name: Thăm dò
         env:
           VNSTOCK_API_KEY: ${{ secrets.VNSTOCK_API_KEY }}

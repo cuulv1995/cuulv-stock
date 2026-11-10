@@ -32,7 +32,7 @@ jobs:
           VNSTOCK_DISABLE_AGENT_SETUP: "1"
         run: |
           pip install -r requirements.txt
-          pip install --extra-index-url https://vnstocks.com/api/simple vnstock vnai
+          bash scripts/install_vnstock.sh
       - name: Tải báo cáo tài chính phần ${{ matrix.shard }}/10
         env:
           VNSTOCK_API_KEY: ${{ secrets.VNSTOCK_API_KEY }}

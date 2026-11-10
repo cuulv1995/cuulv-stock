@@ -45,7 +45,7 @@ jobs:
         run: |
           pip install -r requirements.txt
           # vnstock: nguồn dữ liệu tạm khi chưa có key SSI (phát hành qua kho gói của Vnstock)
-          pip install --extra-index-url https://vnstocks.com/api/simple vnstock vnai || echo "Không cài được vnstock"
+          bash scripts/install_vnstock.sh
 
       - name: Lấy dữ liệu SSI, tính MCDX, tạo dashboard
         id: run
