@@ -280,7 +280,7 @@ def compute(prices: pd.DataFrame, universe: dict[str, list[str]], sectors: dict[
                       key=lambda r: -(r["buy_val"] + r["sell_val"]))
         trades = sorted(({**tr, "sym": r["sym"], "val": round(tr["p"] * tr["v"] / 1e9, 2)} for r in bs.values() for tr in r["trades"]),
                         key=lambda x: -x["val"])[:15]
-        big_out = {"date": big["date"], "threshold": big["threshold"], "scanned": big.get("scanned"), "total": big.get("total"),
+        big_out = {"date": big["date"], "threshold": big["threshold"], "source": big.get("source", "KBS"), "scanned": big.get("scanned"), "total": big.get("total"),
                    "updated": big.get("updated"), "rows": rows[:40], "top_trades": trades,
                    "n_syms": len(bs), "buy_val": round(sum(r["buy_val"] for r in rows), 1),
                    "sell_val": round(sum(r["sell_val"] for r in rows), 1)}

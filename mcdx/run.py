@@ -207,15 +207,30 @@ def main():
             signal = store.read_json(store.DATA / "signal_syms.json", [])
             fund = fundamentals.refresh(prio, signal, budget, today, seconds=minutes * 60)
     # Lệnh khớp lớn trong phiên (≥ 80.000 cổ)
-    big = {}
-    if not args.demo and hasattr(client, "ticks"):
-        from . import bigorders
+    big, tcbs_state = {}, {"valid": False}
+    if not args.demo:
+        from . import bigorders, tcbs
         minutes = float(os.environ.get("BIG_MINUTES", "25") or 0)
+        try:
+            tcbs_state = tcbs.status()
+        except Exception as e:
+            log.warning("Không đọc được token TCBS: %s", e)
         if minutes > 0:
             syms = [s for b in BASKETS for s in uni.get(b, [])]
             session = max(prices[prices["symbol"].isin(syms)]["date"])
             first = store.load_holdings() + store.read_json(store.DATA / "signal_syms.json", [])
-            big = bigorders.scan(client, bigorders.priority(prices, syms, first), minutes, session)
+            order = bigorders.priority(prices, syms, first)
+            tc = tcbs.client_from_env() if tcbs_state.get("valid") else None
+            if tc:
+                log.info("Lệnh lớn: dùng TCBS iFlash Open API (token đến %s)", tcbs_state.get("exp"))
+                big = bigorders.scan(tc, order, minutes, session, workers=6)
+                if not big.get("scanned"):
+                    log.warning("TCBS không trả dữ liệu, chuyển sang KBS.")
+                    big = {}
+            if not big and hasattr(client, "ticks"):
+                if not tc:
+                    log.info("Chưa có token TCBS còn hạn: lệnh lớn dùng KBS (nhập OTP ở workflow Đăng nhập TCBS).")
+                big = bigorders.scan(client, order, minutes, session)
     big_hist = []
     if not args.demo:
         from . import bigorders
@@ -230,7 +245,7 @@ def main():
         store.write_json(store.DATA / "signal_syms.json", sig)
     latest = dt.date.fromisoformat(report["date"])
     complete = latest >= today and not intraday
-    report.update({"source": source, "demo": args.demo, "generated_at": now.strftime("%H:%M %d/%m/%Y"),
+    report.update({"tcbs": tcbs_state if not args.demo else {"valid": False}, "source": source, "demo": args.demo, "generated_at": now.strftime("%H:%M %d/%m/%Y"),
                    "complete": complete, "intraday": bool(intraday and latest >= today)})
     out = build_site(report)
     log.info("Đã tạo %s (phiên %s)", out, report["date"])

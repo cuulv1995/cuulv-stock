@@ -1,0 +1,40 @@
+name: Đăng nhập TCBS (nhập OTP mỗi ngày)
+
+# Mỗi ngày giao dịch chạy 1 lần (nên trước 12:00): mở app TCInvest → Bảo mật → iOTP → Nhận mã iOTP,
+# dán mã vào ô otp rồi bấm chạy ngay. Token dùng được 24 giờ cho các lượt cập nhật 12:05 và 17:05.
+# Token được mã hóa bằng API key trước khi lưu vào data/tcbs_token.enc; OTP, token, API key được che trong log.
+on:
+  workflow_dispatch:
+    inputs:
+      otp:
+        description: "Mã iOTP từ app TCInvest"
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tcbs-login
+  cancel-in-progress: false
+
+jobs:
+  login:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Che OTP trong log
+        run: echo "::add-mask::${{ inputs.otp }}"
+      - uses: actions/checkout@v4
+      - name: Đăng nhập và lưu token (mã hóa)
+        env:
+          TCBS_API_KEY: ${{ secrets.TCBS_API_KEY }}
+          TCBS_OTP: ${{ inputs.otp }}
+        run: python3 -m mcdx.tcbs --login
+      - name: Lưu vào repo
+        run: |
+          git config user.name "mcdx-bot"
+          git config user.email "mcdx-bot@users.noreply.github.com"
+          git add data/tcbs_token.enc
+          git diff --cached --quiet && exit 0
+          git commit -q -m "Cập nhật token TCBS (đã mã hóa)"
+          for i in 1 2 3 4 5; do git pull -q --rebase && git push -q && break; sleep 10; done

@@ -55,6 +55,7 @@ jobs:
           VNSTOCK_API_KEY: ${{ secrets.VNSTOCK_API_KEY }}
           VNSTOCK_DISABLE_AGENT_SETUP: "1"
           DATA_SOURCE: ${{ vars.DATA_SOURCE }}
+          TCBS_API_KEY: ${{ secrets.TCBS_API_KEY }}
         run: |
           ARGS=""
           if [ "${{ inputs.demo }}" = "true" ]; then ARGS="--demo"; fi

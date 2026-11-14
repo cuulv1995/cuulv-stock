@@ -56,7 +56,28 @@ def test_scan_and_history():
     assert bigorders.symbol_history(hist, "OLD")[0]["buy_n"] == 0   # đã quét nhưng không có lệnh lớn
 
 
+def test_tcbs_token_and_ticks():
+    import base64, json, time
+    from mcdx import tcbs
+    now = int(time.time())
+    tok = "h." + base64.urlsafe_b64encode(json.dumps({"iat": now, "exp": now + 86400}).encode()).decode().rstrip("=") + ".s"
+    f = Path(tempfile.mkdtemp()) / "t.enc"
+    tcbs.save_token(tok, "KEY", f)
+    assert tok not in f.read_text()                       # không lưu token dạng rõ
+    assert tcbs.load_token("KEY", f)["token"] == tok
+    assert tcbs.load_token("SAI", f) is None
+
+    class Fake(tcbs.TCBSClient):
+        def ticks(self, s, **k):
+            return [{"p": 13100.0, "v": 263500, "a": "BU", "t": "11:25:28"}, {"p": 13100.0, "v": 7400, "a": "BU", "t": "11:25:28"},
+                    {"p": 13050.0, "v": 167500, "a": "", "t": "14:45:00"}], {"day": "13/11"}
+    df = Fake("x").tick_frame("VIX")
+    r = bigorders.summarize("VIX", df)
+    assert (r["buy_n"], r["sell_n"], r["buy_vol"]) == (1, 0, 263500)   # ATC (a="") không tính, dòng nhỏ không gộp
+
+
 if __name__ == "__main__":
     test_summarize()
     test_scan_and_history()
+    test_tcbs_token_and_ticks()
     print("OK (lệnh lớn)")

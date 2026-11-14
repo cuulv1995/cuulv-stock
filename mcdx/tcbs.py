@@ -4,6 +4,10 @@
 Không bao giờ in hoặc lưu token/API key ra log hay vào repo.
 
     TCBS_API_KEY=... TCBS_OTP=123456 python -m mcdx.tcbs --probe VIX,FPT
+    TCBS_API_KEY=... TCBS_OTP=123456 python -m mcdx.tcbs --login     # lưu token (mã hóa) vào data/tcbs_token.enc
+
+Token sống 24 giờ. Token được mã hóa AES-256 bằng chính API key (bí mật trong GitHub Secrets) trước khi lưu
+vào repo, nên chỉ máy chạy có API key mới đọc được.
 """
 from __future__ import annotations
 
@@ -11,7 +15,9 @@ import base64
 import datetime as dt
 import json
 import os
+import subprocess
 import sys
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -19,6 +25,9 @@ from pathlib import Path
 
 BASE = "https://openapi.tcbs.com.vn"
 ROOT = Path(__file__).resolve().parent.parent
+TOKEN_FILE = ROOT / "data" / "tcbs_token.enc"
+VN = dt.timezone(dt.timedelta(hours=7))
+MAX_RPS = 8.0  # TCBS khuyến nghị dưới 10 request/giây
 
 
 class TCBSError(RuntimeError):
@@ -30,11 +39,44 @@ def _mask(value: str):
         print(f"::add-mask::{value}", flush=True)
 
 
-class TCBSClient:
-    def __init__(self, token: str | None = None, timeout: int = 20):
-        self.token, self.timeout, self.calls = token, timeout, 0
+class _Limiter:
+    """Giới hạn tốc độ chung cho mọi luồng."""
+    def __init__(self, rps: float):
+        self.gap, self.next, self.lock = 1.0 / rps, 0.0, threading.Lock()
 
-    def _req(self, method: str, path: str, body: dict | None = None, auth: bool = True):
+    def wait(self):
+        with self.lock:
+            now = time.monotonic()
+            t = max(now, self.next)
+            self.next = t + self.gap
+        if t > now:
+            time.sleep(t - now)
+
+
+class TCBSClient:
+    tick_source = "TCBS"
+
+    def __init__(self, token: str | None = None, timeout: int = 20, rps: float = MAX_RPS):
+        self.token, self.timeout, self.calls = token, timeout, 0
+        self.limiter = _Limiter(rps)
+
+    def _req(self, method: str, path: str, body: dict | None = None, auth: bool = True, retries: int = 3):
+        last = None
+        for i in range(retries):
+            self.limiter.wait()
+            try:
+                return self._req1(method, path, body, auth)
+            except TCBSError as e:
+                last = e
+                if " 401 " in f" {e} " or "HTTP 400" in str(e) or "HTTP 403" in str(e):
+                    raise
+                time.sleep(1.5 * (i + 1))
+            except (urllib.error.URLError, TimeoutError, ConnectionError) as e:
+                last = TCBSError(str(e))
+                time.sleep(1.5 * (i + 1))
+        raise last
+
+    def _req1(self, method: str, path: str, body: dict | None = None, auth: bool = True):
         headers = {"Content-Type": "application/json", "Accept": "application/json", "User-Agent": "mcdx-dashboard"}
         if auth:
             headers["Authorization"] = f"Bearer {self.token}"
@@ -49,7 +91,7 @@ class TCBSClient:
             raise TCBSError(f"HTTP {e.code} {path.split('?')[0]}: {msg}") from None
 
     def login(self, api_key: str, otp: str) -> str:
-        j = self._req("POST", "/gaia/v1/oauth2/openapi/token", {"apiKey": api_key, "otp": otp}, auth=False)
+        j = self._req("POST", "/gaia/v1/oauth2/openapi/token", {"apiKey": api_key, "otp": otp}, auth=False, retries=1)
         tok = j.get("token")
         if not tok:
             raise TCBSError(f"Không nhận được token: {str(j)[:200]}")
@@ -97,9 +139,95 @@ class TCBSClient:
                 time.sleep(pause)
         return rows, {"total": total, "pages": page, "day": first.get("d"), "headIndex": head}
 
+    def tick_frame(self, symbol: str):
+        """Khớp lệnh phiên gần nhất dạng DataFrame cho bigorders: time, price (đồng), volume, side (buy/sell/other).
+        Mỗi dòng là một lần khớp riêng như TCBS ghi nhận (BU = mua chủ động, SD = bán chủ động, trống = ATO/ATC)."""
+        import pandas as pd
+        rows, meta = self.ticks(symbol)
+        if not rows:
+            return None
+        day = meta.get("day") or ""
+        try:
+            d, m = (int(x) for x in day.split("/")[:2])
+            today = dt.datetime.now(VN).date()
+            year = today.year - (1 if m > today.month else 0)
+            date = dt.date(year, m, d)
+        except Exception:
+            date = dt.datetime.now(VN).date()
+        side = {"BU": "buy", "SD": "sell"}
+        return pd.DataFrame({
+            "time": pd.to_datetime([f"{date.isoformat()} {r.get('t')}" for r in rows]),
+            "price": [float(r.get("p") or 0) for r in rows],
+            "volume": [float(r.get("v") or 0) for r in rows],
+            "side": [side.get(r.get("a") or "", "other") for r in rows],
+        }).sort_values("time")
+
+    ticks_df = tick_frame
+
     def bars_daily(self, symbol: str, count: int = 5, kind: str = "stock") -> dict:
         to = int(time.time())
         return self._req("GET", f"/nyx/v2/stock/bars-long-term?ticker={symbol}&type={kind}&resolution=D&to={to}&countBack={count}")
+
+
+# ---------------------------------------------------------------- token mã hóa trong repo
+def _openssl(args: list[str], data: bytes, api_key: str) -> bytes:
+    env = {**os.environ, "TCBS_PASS": api_key}
+    r = subprocess.run(["openssl", "enc", "-aes-256-cbc", "-pbkdf2", "-iter", "200000", "-md", "sha256", "-a", "-A",
+                        "-pass", "env:TCBS_PASS", *args], input=data, capture_output=True, env=env, timeout=30)
+    if r.returncode != 0:
+        raise TCBSError("openssl lỗi: " + r.stderr.decode(errors="replace")[:200])
+    return r.stdout
+
+
+def save_token(token: str, api_key: str, path: Path = TOKEN_FILE) -> dict:
+    exp = TCBSClient.token_expiry(token)
+    blob = json.dumps({"token": token, "exp": exp.get("exp"), "saved": dt.datetime.now(VN).isoformat(timespec="seconds")})
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(_openssl(["-salt"], blob.encode(), api_key) + b"\n")
+    return exp
+
+
+def load_token(api_key: str | None = None, path: Path = TOKEN_FILE, margin_min: int = 20) -> dict | None:
+    """Token còn hạn (ít nhất margin_min phút) hoặc None."""
+    api_key = api_key or os.environ.get("TCBS_API_KEY", "")
+    if not api_key or not path.exists():
+        return None
+    try:
+        j = json.loads(_openssl(["-d"], path.read_bytes().strip() + b"\n", api_key))
+    except Exception:
+        return None
+    exp = j.get("exp")
+    if not exp or dt.datetime.fromisoformat(exp) < dt.datetime.now(VN) + dt.timedelta(minutes=margin_min):
+        return None
+    _mask(j["token"])
+    return j
+
+
+def status(api_key: str | None = None) -> dict:
+    j = load_token(api_key, margin_min=0)
+    return {"valid": bool(j), "exp": j.get("exp") if j else None}
+
+
+def client_from_env() -> TCBSClient | None:
+    j = load_token()
+    return TCBSClient(j["token"]) if j else None
+
+
+def login_and_save():
+    api_key, otp = os.environ.get("TCBS_API_KEY", ""), os.environ.get("TCBS_OTP", "").strip()
+    _mask(api_key)
+    _mask(otp)
+    if not api_key:
+        sys.exit("Thiếu TCBS_API_KEY (GitHub Secrets).")
+    c = TCBSClient()
+    try:
+        tok = c.login(api_key, otp)
+    except Exception as e:
+        print("Đăng nhập TCBS thất bại:", e)
+        sys.exit(1)
+    exp = save_token(tok, api_key)
+    assert load_token(api_key, margin_min=0), "không đọc lại được token đã lưu"
+    print("Đăng nhập TCBS thành công. Token còn hiệu lực đến", exp.get("exp"))
 
 
 def probe(symbols: list[str]):
@@ -154,3 +282,7 @@ def probe(symbols: list[str]):
 if __name__ == "__main__":
     if len(sys.argv) > 2 and sys.argv[1] == "--probe":
         probe([x.strip().upper() for x in sys.argv[2].split(",") if x.strip()])
+    elif len(sys.argv) > 1 and sys.argv[1] == "--login":
+        login_and_save()
+    elif len(sys.argv) > 1 and sys.argv[1] == "--status":
+        print(status())

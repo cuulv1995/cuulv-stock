@@ -1,4 +1,5 @@
-"""Lệnh khớp lớn trong phiên (mặc định ≥ 80.000 cổ) từ dữ liệu khớp lệnh từng giao dịch của vnstock (KBS).
+"""Lệnh khớp lớn trong phiên (mặc định ≥ 80.000 cổ) từ dữ liệu khớp lệnh: TCBS iFlash Open API khi có token
+(mỗi dòng là một lần khớp riêng), nếu không thì vnstock (KBS, các phần khớp của một lệnh chủ động gộp thành một dòng).
 
 Mỗi giao dịch có chiều chủ động: "buy" = bên mua chủ động khớp vào giá bán (mua chủ động),
 "sell" = bên bán chủ động khớp vào giá mua (bán chủ động). Khớp lệnh định kỳ mở cửa/đóng cửa (ATO/ATC)
@@ -55,31 +56,47 @@ def summarize(sym: str, ticks: pd.DataFrame, threshold: int = THRESHOLD) -> dict
     return out
 
 
-def scan(client, symbols: list[str], minutes: float, session: dt.date, threshold: int = THRESHOLD) -> dict:
-    """Quét lần lượt các mã trong giới hạn thời gian. Chỉ nhận dữ liệu của đúng phiên `session`."""
+def scan(client, symbols: list[str], minutes: float, session: dt.date, threshold: int = THRESHOLD,
+         workers: int = 1, source: str | None = None) -> dict:
+    """Quét các mã trong giới hạn thời gian (song song khi workers > 1). Chỉ nhận dữ liệu của đúng phiên `session`.
+    client.ticks_df(sym) (nếu có) hoặc client.ticks(sym) trả DataFrame time/price/volume/side."""
+    from concurrent.futures import ThreadPoolExecutor
     t0 = time.monotonic()
-    by_sym, scanned, errors, done = {}, 0, 0, []
-    for s in symbols:
-        if minutes and time.monotonic() - t0 > minutes * 60:
-            break
+    deadline = t0 + minutes * 60 if minutes else None
+    fetch = getattr(client, "ticks_df", None) or client.ticks
+    state = {"errors": 0, "ok": 0, "stop": False}
+
+    def one(s):
+        if state["stop"] or (deadline and time.monotonic() > deadline):
+            return s, "skip", None
         try:
-            tk = client.ticks(s)
+            tk = fetch(s)
+            state["ok"] += 1
+            return s, "ok", tk
         except Exception as e:
-            errors += 1
+            state["errors"] += 1
             log.warning("Không lấy được khớp lệnh %s: %s", s, e)
-            if errors >= 10 and scanned == 0:
-                log.warning("Nguồn khớp lệnh lỗi liên tục, dừng quét.")
-                break
-            continue
-        scanned += 1
-        done.append(s)
-        if tk is None or len(tk) == 0 or tk["time"].dt.date.max() != session:
-            continue
-        r = summarize(s, tk[tk["time"].dt.date == session], threshold)
-        if r and (r["buy_n"] or r["sell_n"]):
-            by_sym[s] = r
+            if state["errors"] >= 10 and state["ok"] == 0:
+                state["stop"] = True
+            return s, "err", None
+
+    by_sym, done = {}, []
+    with ThreadPoolExecutor(max_workers=max(1, workers)) as ex:
+        for s, st, tk in ex.map(one, symbols):
+            if st != "ok":
+                continue
+            done.append(s)
+            if tk is None or len(tk) == 0 or tk["time"].dt.date.max() != session:
+                continue
+            r = summarize(s, tk[tk["time"].dt.date == session], threshold)
+            if r and (r["buy_n"] or r["sell_n"]):
+                by_sym[s] = r
+    if state["stop"]:
+        log.warning("Nguồn khớp lệnh lỗi liên tục, dừng quét.")
+    scanned = len(done)
     res = {"date": session.isoformat(), "threshold": threshold, "scanned": scanned, "total": len(symbols),
-           "updated": dt.datetime.now().strftime("%H:%M"), "scanned_syms": done, "by_sym": by_sym}
+           "updated": dt.datetime.now().strftime("%H:%M"), "scanned_syms": done, "by_sym": by_sym,
+           "source": source or getattr(client, "tick_source", "KBS")}
     log.info("Lệnh lớn ≥ %s cổ: quét %d/%d mã, %d mã có lệnh lớn (%.0f giây)", f"{threshold:,}", scanned,
              len(symbols), len(by_sym), time.monotonic() - t0)
     OUT.mkdir(parents=True, exist_ok=True)
@@ -115,9 +132,9 @@ def symbol_history(hist: list[dict], sym: str) -> list[dict]:
     for d in hist:
         r = (d.get("by_sym") or {}).get(sym)
         if r:
-            rows.append({"date": d["date"], "scanned": True, **{k: v for k, v in r.items() if k != "sym"}})
+            rows.append({"date": d["date"], "scanned": True, "src": d.get("source", "KBS"), **{k: v for k, v in r.items() if k != "sym"}})
         elif sym in set(d.get("scanned_syms") or []):
-            rows.append({"date": d["date"], "scanned": True, "buy_n": 0, "sell_n": 0, "buy_vol": 0, "sell_vol": 0,
+            rows.append({"date": d["date"], "scanned": True, "src": d.get("source", "KBS"), "buy_n": 0, "sell_n": 0, "buy_vol": 0, "sell_vol": 0,
                          "buy_val": 0.0, "sell_val": 0.0, "net_vol": 0, "net_val": 0.0, "share": 0.0, "trades": []})
         else:
             rows.append({"date": d["date"], "scanned": False})

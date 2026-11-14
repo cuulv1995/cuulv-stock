@@ -296,7 +296,7 @@ footer{font-size:12px;color:var(--ink-3);line-height:1.6;max-width:80ch}
     <div class="tbl-wrap"><table><thead><tr><th class="l">#</th><th class="l">Mã</th><th>Mua chủ động lớn</th><th>Bán chủ động lớn</th><th>Ròng (cổ)</th><th>Ròng (tỷ)</th><th>% KL phiên</th><th>Giá · %</th><th>Banker</th></tr></thead><tbody id="tBig"></tbody></table></div>
     <h3 style="margin-top:16px">Giao dịch lớn nhất phiên</h3>
     <div class="tbl-wrap"><table><thead><tr><th class="l">Giờ</th><th class="l">Mã</th><th class="l">Chiều</th><th>Giá</th><th>Khối lượng</th><th>Giá trị (tỷ)</th></tr></thead><tbody id="tBigT"></tbody></table></div>
-    <p class="note">Mỗi dòng là một lệnh chủ động có khối lượng từ ngưỡng trở lên theo dữ liệu KBS (các phần khớp của cùng một lệnh chủ động được ghi thành một dòng; các lệnh khác nhau trong cùng một giây vẫn tách riêng). "Mua chủ động" là bên mua chấp nhận giá bán (thường thể hiện nhu cầu mua mạnh), "Bán chủ động" ngược lại. Không tính khớp lệnh định kỳ ATO/ATC vì đó là tổng nhiều lệnh. Một lệnh đặt lớn có thể khớp thành nhiều giao dịch nhỏ nên con số này chỉ phản ánh phần khớp lớn. "% KL phiên" = khối lượng khớp lớn / tổng khối lượng khớp của mã. Dữ liệu từ vnstock (KBS); mỗi lần cập nhật quét lần lượt các mã đang nắm giữ, đang có tín hiệu, rồi theo thanh khoản cho đến hết thời gian cho phép.</p>
+    <p class="note"><span id="bigSrcNote"></span> "Mua chủ động" là bên mua chấp nhận giá bán (thường thể hiện nhu cầu mua mạnh), "Bán chủ động" ngược lại. Không tính khớp lệnh định kỳ ATO/ATC vì đó là tổng nhiều lệnh. Một lệnh đặt lớn có thể khớp thành nhiều giao dịch nhỏ nên con số này chỉ phản ánh phần khớp lớn. "% KL phiên" = khối lượng khớp lớn / tổng khối lượng khớp của mã. Mỗi lần cập nhật quét các mã đang nắm giữ, đang có tín hiệu, rồi theo thanh khoản cho đến hết thời gian cho phép. Để dùng nguồn TCBS, mỗi ngày nhập mã OTP một lần ở workflow "Đăng nhập TCBS" trên GitHub (token dùng được 24 giờ).</p>
   </section>
 
   <section class="panel" aria-labelledby="hQual" id="pQual">
@@ -463,7 +463,9 @@ $("tSus").innerHTML=D.lists.sustain.slice(0,10).map((s,i)=>{const x=R[s];return 
 /* lệnh lớn */
 (()=>{const B=D.big;if(!B){$("pBig").hidden=true;return}
   const th=nf(B.threshold,0);$("bigTh").textContent=th;
-  $("cBig").textContent=`phiên ${fullD(B.date)} · đã quét ${B.scanned}/${B.total} mã${B.updated?" · cập nhật "+B.updated:""}`;
+  const T=D.tcbs||{},isT=B.source==="TCBS";
+  $("cBig").textContent=`phiên ${fullD(B.date)} · nguồn ${isT?"TCBS":"KBS"} · đã quét ${B.scanned}/${B.total} mã${B.updated?" · cập nhật "+B.updated:""}`;
+  $("bigSrcNote").textContent=(isT?"Nguồn TCBS: mỗi dòng là một lần khớp riêng đúng như sàn ghi nhận (giống bảng khớp lệnh trên ứng dụng TCInvest).":"Nguồn KBS (khi chưa đăng nhập TCBS): các phần khớp của cùng một lệnh chủ động được gộp thành một dòng, nên khối lượng có thể lớn hơn từng dòng khớp lẻ trên ứng dụng.")+(T.valid?` Đăng nhập TCBS còn hiệu lực đến ${T.exp.slice(11,16)} ngày ${fullD(T.exp.slice(0,10))}.`:" Hiện chưa đăng nhập TCBS (hoặc token đã hết hạn).");
   $("bigSum").innerHTML=`<span><b>${B.n_syms}</b> mã có lệnh lớn</span><span>Mua chủ động lớn <b class="up">${nf(B.buy_val,1)} tỷ</b></span><span>Bán chủ động lớn <b class="down">${nf(B.sell_val,1)} tỷ</b></span><span>Ròng <b class="${cls(B.buy_val-B.sell_val)}">${sgn(B.buy_val-B.sell_val,f1)} tỷ</b></span>`;
   const big=v=>v>=1e6?nf(v/1e6,2)+" tr":nf(v,0);
   function render(mode){
@@ -767,7 +769,7 @@ async function loadBig(sym){
   const vol=v=>v>=1e6?nf(v/1e6,2)+" tr":nf(v,0);
   const sum=`<div class="tbl-wrap"><table><thead><tr><th class="l">Ngày</th><th>Mua chủ động lớn</th><th>Bán chủ động lớn</th><th>Ròng (cổ)</th><th>Ròng (tỷ)</th><th>% KL phiên</th></tr></thead><tbody>${days.map((d,i)=>!d.scanned
       ?`<tr><td class="l">${fullD(d.date)}</td><td colspan="5" class="faint" style="text-align:left;font-family:var(--f-body)">Chưa quét tới mã này trong phiên</td></tr>`
-      :`<tr class="click" tabindex="0" data-bigday="${i}"><td class="l">${fullD(d.date)}</td>
+      :`<tr class="click" tabindex="0" data-bigday="${i}"><td class="l">${fullD(d.date)}<small class="chg faint">${d.src||"KBS"}</small></td>
         <td>${d.buy_n?`${d.buy_n} lệnh<small class="chg up">${vol(d.buy_vol)} · ${nf(d.buy_val,1)} tỷ</small>`:"–"}</td>
         <td>${d.sell_n?`${d.sell_n} lệnh<small class="chg down">${vol(d.sell_vol)} · ${nf(d.sell_val,1)} tỷ</small>`:"–"}</td>
         <td class="${cls(d.net_vol)}">${d.net_vol?(d.net_vol>0?"+":"")+vol(d.net_vol):"0"}</td><td class="${cls(d.net_val)}">${sgn(d.net_val,f1)}</td><td>${f1(d.share)}%</td></tr>`).join("")}</tbody></table></div>`;
@@ -775,7 +777,7 @@ async function loadBig(sym){
   box.innerHTML=`<div class="panel-head"><h3>Lệnh khớp lớn ≥ ${th} cổ · ${days.length} phiên</h3></div>${sum}
     <div class="panel-head" style="margin-top:14px"><h3 id="bigDayT"></h3><div class="seg" role="group" aria-label="Chọn phiên">${days.map((d,i)=>`<button type="button" data-bigbtn="${i}" aria-pressed="false" ${d.scanned?"":"disabled"}>${fullD(d.date).slice(0,5)}</button>`).join("")}</div></div>
     <div id="bigDay"></div>
-    <p class="note">Mỗi dòng là một lệnh chủ động từ ${th} cổ trở lên theo dữ liệu KBS: các phần khớp của cùng một lệnh mua (hoặc bán) chủ động quét qua nhiều lệnh đối ứng được ghi thành một dòng, nên khối lượng có thể lớn hơn từng dòng khớp lẻ trên ứng dụng của công ty chứng khoán (ví dụ VIX 13:41:46 phiên 06/11: KBS ghi 367.000 cổ, ứng dụng tách 255.900 + 40.200 + 24.100 + …). Các lệnh chủ động khác nhau trong cùng một giây vẫn là các dòng riêng. Mua chủ động: bên mua chấp nhận giá bán; bán chủ động: bên bán chấp nhận giá mua. Không tính khớp định kỳ ATO/ATC.</p>`;
+    <p class="note">Nguồn TCBS: mỗi dòng là một lần khớp riêng đúng như sàn ghi nhận (giống bảng khớp lệnh trên ứng dụng TCInvest). Nguồn KBS (khi chưa đăng nhập TCBS): các phần khớp của cùng một lệnh chủ động được gộp thành một dòng, nên khối lượng có thể lớn hơn từng dòng khớp lẻ trên ứng dụng. Nguồn của từng phiên ghi ngay dưới ngày. Mua chủ động: bên mua chấp nhận giá bán; bán chủ động: bên bán chấp nhận giá mua. Không tính khớp định kỳ ATO/ATC.</p>`;
   const show=i=>{const d=days[i];if(!d||!d.scanned)return;
     box.querySelectorAll("[data-bigbtn]").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.bigbtn===i?"true":"false"));
     $("bigDayT").textContent=`Chi tiết phiên ${fullD(d.date)}`;
