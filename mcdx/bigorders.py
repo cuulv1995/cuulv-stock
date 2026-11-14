@@ -80,17 +80,30 @@ def scan(client, symbols: list[str], minutes: float, session: dt.date, threshold
                 state["stop"] = True
             return s, "err", None
 
-    by_sym, done = {}, []
+    by_sym, done, failed = {}, [], []
+
+    def take(s, st, tk):
+        if st == "err":
+            failed.append(s)
+        if st != "ok":
+            return
+        done.append(s)
+        if tk is None or len(tk) == 0 or tk["time"].dt.date.max() != session:
+            return
+        r = summarize(s, tk[tk["time"].dt.date == session], threshold)
+        if r and (r["buy_n"] or r["sell_n"]):
+            by_sym[s] = r
+
     with ThreadPoolExecutor(max_workers=max(1, workers)) as ex:
         for s, st, tk in ex.map(one, symbols):
-            if st != "ok":
-                continue
-            done.append(s)
-            if tk is None or len(tk) == 0 or tk["time"].dt.date.max() != session:
-                continue
-            r = summarize(s, tk[tk["time"].dt.date == session], threshold)
-            if r and (r["buy_n"] or r["sell_n"]):
-                by_sym[s] = r
+            take(s, st, tk)
+    # quét lại các mã lỗi (thường do giới hạn tốc độ của nguồn) nếu còn thời gian
+    retry, failed = failed, []
+    if retry and not state["stop"]:
+        log.info("Quét lại %d mã bị lỗi", len(retry))
+        with ThreadPoolExecutor(max_workers=max(1, workers // 2)) as ex:
+            for s, st, tk in ex.map(one, retry):
+                take(s, st, tk)
     if state["stop"]:
         log.warning("Nguồn khớp lệnh lỗi liên tục, dừng quét.")
     scanned = len(done)

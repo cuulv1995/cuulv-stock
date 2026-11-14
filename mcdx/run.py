@@ -223,7 +223,7 @@ def main():
             tc = tcbs.client_from_env() if tcbs_state.get("valid") else None
             if tc:
                 log.info("Lệnh lớn: dùng TCBS iFlash Open API (token đến %s)", tcbs_state.get("exp"))
-                big = bigorders.scan(tc, order, minutes, session, workers=6)
+                big = bigorders.scan(tc, order, float(os.environ.get("BIG_MINUTES_TCBS", "45") or 45), session, workers=4)
                 if not big.get("scanned"):
                     log.warning("TCBS không trả dữ liệu, chuyển sang KBS.")
                     big = {}

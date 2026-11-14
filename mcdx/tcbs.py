@@ -27,7 +27,7 @@ BASE = "https://openapi.tcbs.com.vn"
 ROOT = Path(__file__).resolve().parent.parent
 TOKEN_FILE = ROOT / "data" / "tcbs_token.enc"
 VN = dt.timezone(dt.timedelta(hours=7))
-MAX_RPS = 8.0  # TCBS khuyến nghị dưới 10 request/giây
+MAX_RPS = float(os.environ.get("TCBS_RPS", "4") or 4)  # thực tế TCBS trả 429 khi gọi ~8 request/giây liên tục
 
 
 class TCBSError(RuntimeError):
@@ -40,9 +40,15 @@ def _mask(value: str):
 
 
 class _Limiter:
-    """Giới hạn tốc độ chung cho mọi luồng."""
+    """Giới hạn tốc độ chung cho mọi luồng; gặp 429 thì cả nhóm tạm dừng và chạy chậm lại."""
     def __init__(self, rps: float):
-        self.gap, self.next, self.lock = 1.0 / rps, 0.0, threading.Lock()
+        self.gap, self.next, self.lock, self.hits = 1.0 / rps, 0.0, threading.Lock(), 0
+
+    def penalize(self, pause: float = 8.0):
+        with self.lock:
+            self.hits += 1
+            self.gap = min(1.0, self.gap * 1.3)
+            self.next = max(self.next, time.monotonic() + pause)
 
     def wait(self):
         with self.lock:
@@ -60,7 +66,7 @@ class TCBSClient:
         self.token, self.timeout, self.calls = token, timeout, 0
         self.limiter = _Limiter(rps)
 
-    def _req(self, method: str, path: str, body: dict | None = None, auth: bool = True, retries: int = 3):
+    def _req(self, method: str, path: str, body: dict | None = None, auth: bool = True, retries: int = 6):
         last = None
         for i in range(retries):
             self.limiter.wait()
@@ -68,6 +74,9 @@ class TCBSClient:
                 return self._req1(method, path, body, auth)
             except TCBSError as e:
                 last = e
+                if "HTTP 429" in str(e):
+                    self.limiter.penalize(8.0 * (i + 1))
+                    continue
                 if " 401 " in f" {e} " or "HTTP 400" in str(e) or "HTTP 403" in str(e):
                     raise
                 time.sleep(1.5 * (i + 1))
