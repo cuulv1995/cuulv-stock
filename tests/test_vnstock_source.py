@@ -85,6 +85,7 @@ def run_case():
     uni = json.loads((tmp / "config" / "universe_default.json").read_text())
     prices = demo_prices(uni["VN30"] + uni["MID"] + SMALL + ["VNINDEX"], day2)
     env = {k: v for k, v in os.environ.items() if not k.startswith("SSI_")}
+    env["KBS_DIRECT"] = "0"  # dùng lớp vnstock giả lập thay vì gọi KBS thật
     with mock.patch.dict(os.environ, env, clear=True), mock.patch("time.sleep"):
         # Ngày 1: tải lịch sử
         p1 = prices[prices["date"] <= day1]
@@ -95,7 +96,7 @@ def run_case():
         with install_fake_vnstock(prices, uni, board_day=day2), mock.patch.object(sys, "argv", ["run", "--today", day2.isoformat()]):
             run.main()
     html = (tmp / "site" / "index.html").read_text()
-    assert '"source":"vnstock (KBS) – tạm thời"' in html, "nguồn hiển thị sai"
+    assert '"source":"KBS"' in html, "nguồn hiển thị sai"
     df = pd.read_csv(tmp / "data" / "prices.csv")
     n_sym = len(uni["VN30"]) + len(uni["MID"]) + len(SMALL) + 1
     assert df["symbol"].nunique() == n_sym, df["symbol"].nunique()

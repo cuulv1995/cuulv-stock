@@ -38,13 +38,21 @@ class VnstockClient:
 
     # ------------------------------------------------------------------ setup
     def authenticate(self):
+        direct = os.environ.get("KBS_DIRECT", "1") != "0"
         try:
+            if direct:
+                raise ImportError("dùng KBS trực tiếp")
             from vnstock.explorer.kbs.listing import Listing
             from vnstock.explorer.kbs.quote import Quote
             from vnstock.explorer.kbs.trading import Trading
-        except ImportError as e:
-            raise RuntimeError(
-                "Chưa cài vnstock: pip install --extra-index-url https://vnstocks.com/api/simple vnstock vnai") from e
+        except ImportError:
+            # vnstock 4.x ngừng hoạt động từ 10/11/2026: gọi thẳng API công khai của KBS
+            from .kbs_shim import Listing, Quote, Trading
+            self.universe_label = "KBS"
+            self.pause = float(os.environ.get("KBS_PAUSE", "0.3"))
+            self._Quote, self._Listing, self._Trading = Quote, Listing, Trading
+            log.info("Dùng API KBS trực tiếp (không qua vnstock), nghỉ %.1f s giữa các lần gọi", self.pause)
+            return
         self._Quote, self._Listing, self._Trading = Quote, Listing, Trading
         key = os.environ.get("VNSTOCK_API_KEY")
         if key:
@@ -68,7 +76,7 @@ class VnstockClient:
             except Exception as e:
                 last = e
             wait = 20 * (attempt + 1)
-            log.warning("vnstock lỗi (%s), thử lại sau %ds", last, wait)
+            log.warning("Nguồn KBS lỗi (%s), thử lại sau %ds", last, wait)
             time.sleep(wait)
         raise RuntimeError(f"vnstock thất bại: {last}")
 

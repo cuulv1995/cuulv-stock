@@ -148,7 +148,7 @@ def pick_source(choice: str):
     from .vnstock_source import VnstockClient
     c = VnstockClient()
     c.authenticate()
-    return c, "vnstock (KBS) – tạm thời"
+    return c, "KBS"
 
 
 def main():
