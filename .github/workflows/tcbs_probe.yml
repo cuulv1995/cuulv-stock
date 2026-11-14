@@ -1,0 +1,39 @@
+name: Thăm dò TCBS iFlash Open API
+
+# Chạy tay: mở app TCInvest lấy mã Smart OTP rồi bấm chạy ngay (OTP chỉ có hiệu lực trong thời gian ngắn).
+# Chỉ gọi các endpoint dữ liệu thị trường (chỉ đọc). Token và API key được che trong log, không lưu vào repo.
+on:
+  workflow_dispatch:
+    inputs:
+      otp:
+        description: "Mã Smart OTP từ app TCInvest"
+        required: true
+      symbols:
+        description: "Mã cần thử"
+        default: "VIX,FPT"
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Che OTP trong log
+        run: echo "::add-mask::${{ inputs.otp }}"
+      - uses: actions/checkout@v4
+      - name: Đăng nhập TCBS và lấy khớp lệnh
+        env:
+          TCBS_API_KEY: ${{ secrets.TCBS_API_KEY }}
+          TCBS_OTP: ${{ inputs.otp }}
+        run: python3 -m mcdx.tcbs --probe "${{ inputs.symbols }}"
+      - name: Lưu kết quả thăm dò
+        if: always()
+        run: |
+          git config user.name "mcdx-bot"
+          git config user.email "mcdx-bot@users.noreply.github.com"
+          git add data/debug/tcbs_probe.json || exit 0
+          git diff --cached --quiet && exit 0
+          git commit -q -m "Kết quả thăm dò TCBS iFlash Open API"
+          for i in 1 2 3; do git pull -q --rebase && git push -q && break; sleep 10; done
