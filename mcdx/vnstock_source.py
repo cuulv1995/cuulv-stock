@@ -94,7 +94,9 @@ class VnstockClient:
         df = self._call(lambda: self._Quote(sym).history(start=frm.isoformat(), end=to.isoformat(), interval="1D"))
         if df is None or len(df) == 0:
             return []
-        scale = 1 if sym in INDEXES else 1000  # KBS trả giá cổ phiếu theo nghìn đồng
+        # vnstock trả giá cổ phiếu theo nghìn đồng, API KBS gọi trực tiếp trả theo đồng: nhận biết theo độ lớn
+        med = float(pd.to_numeric(df["close"], errors="coerce").median() or 0)
+        scale = 1 if (sym in INDEXES or med >= 1000) else 1000
         out = []
         for r in df.itertuples(index=False):
             d = pd.Timestamp(r.time).date()
