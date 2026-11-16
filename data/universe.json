@@ -34,7 +34,6 @@
  "MID": [
   "ANV",
   "BAF",
-  "BCM",
   "BMP",
   "BSI",
   "BVH",
@@ -59,6 +58,7 @@
   "GEX",
   "GMD",
   "HAG",
+  "HAH",
   "HCM",
   "HDG",
   "HHV",
@@ -178,7 +178,6 @@
   "GEG",
   "GIL",
   "GSP",
-  "HAH",
   "HAP",
   "HAR",
   "HAX",
@@ -317,6 +316,6 @@
   "YBM",
   "YEG"
  ],
- "updated": "2026-11-09",
- "source": "vnstock (KBS)"
+ "updated": "2026-11-16",
+ "source": "KBS"
 }
