@@ -1,16 +1,17 @@
 [
  "MSB",
- "SIP",
- "NAB",
- "VIC",
- "VPL",
- "VJC",
- "CTD",
  "NT2",
- "FRT",
- "REE",
+ "DBC",
+ "VPL",
+ "VIC",
+ "VJC",
  "TAL",
+ "TV2",
+ "VPI",
+ "BAF",
  "STB",
+ "MSN",
+ "SIP",
  "NLG",
- "VPI"
+ "POW"
 ]

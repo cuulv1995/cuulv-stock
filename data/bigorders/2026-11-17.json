@@ -1,0 +1,1241 @@
+{
+ "date": "2026-11-17",
+ "threshold": 80000,
+ "scanned": 311,
+ "total": 311,
+ "updated": "05:11",
+ "scanned_syms": [
+  "VIX",
+  "VRE",
+  "MSB",
+  "SIP",
+  "NAB",
+  "VIC",
+  "VPL",
+  "VJC",
+  "CTD",
+  "NT2",
+  "FRT",
+  "REE",
+  "TAL",
+  "STB",
+  "NLG",
+  "VPI",
+  "FPT",
+  "MSN",
+  "HDB",
+  "VCB",
+  "TCB",
+  "BSR",
+  "SSI",
+  "HPG",
+  "MBB",
+  "SHB",
+  "GEX",
+  "VPB",
+  "VHM",
+  "KDH",
+  "VND",
+  "CTG",
+  "BID",
+  "PVT",
+  "PLX",
+  "POW",
+  "MWG",
+  "VCI",
+  "CII",
+  "DXG",
+  "DBC",
+  "VNM",
+  "TCH",
+  "LPB",
+  "MCH",
+  "NVL",
+  "BAF",
+  "VSC",
+  "HCM",
+  "VCG",
+  "ACB",
+  "GMD",
+  "GEE",
+  "PNJ",
+  "PDR",
+  "DIG",
+  "TCX",
+  "GAS",
+  "TPB",
+  "EIB",
+  "VIB",
+  "DCL",
+  "CTS",
+  "PVD",
+  "VCK",
+  "NKG",
+  "SBT",
+  "GVR",
+  "DCM",
+  "BVH",
+  "CTR",
+  "SSB",
+  "HDG",
+  "KBC",
+  "DPM",
+  "HHV",
+  "BSI",
+  "DGW",
+  "DPG",
+  "VTP",
+  "HSG",
+  "KOS",
+  "DHC",
+  "PHR",
+  "CTI",
+  "FTS",
+  "DSE",
+  "SAB",
+  "DPR",
+  "DHA",
+  "VHC",
+  "VPX",
+  "HAG",
+  "CSV",
+  "CDC",
+  "CRC",
+  "PC1",
+  "HT1",
+  "HAH",
+  "PAN",
+  "ANV",
+  "EVF",
+  "KDC",
+  "CTF",
+  "OCB",
+  "AAA",
+  "VGC",
+  "CMG",
+  "BWE",
+  "BMP",
+  "AGR",
+  "AGG",
+  "BFC",
+  "ASM",
+  "AFX",
+  "DRC",
+  "BMI",
+  "APH",
+  "CSM",
+  "D2D",
+  "ASP",
+  "DBD",
+  "DAH",
+  "AST",
+  "ACC",
+  "CNG",
+  "SJS",
+  "APG",
+  "DLG",
+  "BMC",
+  "DC4",
+  "BKG",
+  "CCL",
+  "CMX",
+  "ABT",
+  "BTP",
+  "CHP",
+  "DHM",
+  "BCE",
+  "CRE",
+  "C32",
+  "CLL",
+  "DRL",
+  "BIC",
+  "ADP",
+  "C47",
+  "CIG",
+  "AAM",
+  "ADS",
+  "ACG",
+  "ACL",
+  "BRC",
+  "CCC",
+  "ADG",
+  "CKG",
+  "DBT",
+  "HDC",
+  "ELC",
+  "HHS",
+  "HHP",
+  "DXS",
+  "HSL",
+  "FCN",
+  "HTG",
+  "HQC",
+  "FIR",
+  "EVG",
+  "HII",
+  "GEG",
+  "HID",
+  "HPX",
+  "HVH",
+  "HTN",
+  "HAX",
+  "GIL",
+  "GSP",
+  "FMC",
+  "HCD",
+  "HAP",
+  "DSN",
+  "DTA",
+  "DSC",
+  "EVE",
+  "HMC",
+  "FIT",
+  "DVP",
+  "DXV",
+  "GDT",
+  "FCM",
+  "HAR",
+  "HTI",
+  "HRC",
+  "HTV",
+  "HU1",
+  "KHG",
+  "ORS",
+  "NAF",
+  "KSB",
+  "NTL",
+  "MSH",
+  "PET",
+  "NCT",
+  "NNC",
+  "LCG",
+  "IJC",
+  "NTC",
+  "MCP",
+  "LIX",
+  "PAC",
+  "IDI",
+  "MIG",
+  "LHG",
+  "OGC",
+  "JVC",
+  "ITC",
+  "ICT",
+  "ILB",
+  "MDG",
+  "NHA",
+  "ITD",
+  "LSS",
+  "MCM",
+  "NHH",
+  "HUB",
+  "PDV",
+  "NO1",
+  "LBM",
+  "LGL",
+  "KHP",
+  "KMR",
+  "LAF",
+  "MHC",
+  "NBB",
+  "TV2",
+  "PHC",
+  "PGC",
+  "PIT",
+  "PMG",
+  "PVP",
+  "TCM",
+  "SHI",
+  "SCS",
+  "SGN",
+  "RYG",
+  "SCR",
+  "SJD",
+  "SMB",
+  "SBG",
+  "PPC",
+  "TCL",
+  "PTB",
+  "PTC",
+  "TCI",
+  "SAM",
+  "QCG",
+  "SKG",
+  "RAL",
+  "SAV",
+  "SFI",
+  "SGR",
+  "SGT",
+  "SHA",
+  "SRC",
+  "SZC",
+  "VVS",
+  "TDP",
+  "TTA",
+  "TCO",
+  "TLG",
+  "TRC",
+  "VDS",
+  "VOS",
+  "YEG",
+  "VAB",
+  "VTO",
+  "TN1",
+  "VNS",
+  "ST8",
+  "TNH",
+  "TSC",
+  "SZL",
+  "TVS",
+  "TLH",
+  "VIP",
+  "TNI",
+  "TNT",
+  "STK",
+  "TLD",
+  "SVD",
+  "VPS",
+  "VPH",
+  "TEG",
+  "THG",
+  "TDC",
+  "VCA",
+  "TDH",
+  "TIP",
+  "NHT",
+  "TMT",
+  "TPC",
+  "YBM",
+  "VRC",
+  "TVB",
+  "UIC",
+  "VFG",
+  "TCT",
+  "SVT",
+  "TDG",
+  "VNL",
+  "VSI",
+  "VTB"
+ ],
+ "by_sym": {
+  "VIX": {
+   "sym": "VIX",
+   "total_vol": 11389000.0,
+   "buy_n": 3,
+   "sell_n": 4,
+   "buy_vol": 351100,
+   "sell_vol": 591000,
+   "buy_val": 4.51,
+   "sell_val": 7.61,
+   "net_vol": -239900,
+   "net_val": -3.1,
+   "share": 8.3,
+   "trades": [
+    {
+     "t": "09:49:45",
+     "p": 12800.0,
+     "v": 151100,
+     "side": "buy"
+    },
+    {
+     "t": "10:43:28",
+     "p": 12950.0,
+     "v": 100000,
+     "side": "buy"
+    },
+    {
+     "t": "10:56:06",
+     "p": 12900.0,
+     "v": 200000,
+     "side": "sell"
+    },
+    {
+     "t": "10:56:06",
+     "p": 12900.0,
+     "v": 100000,
+     "side": "sell"
+    },
+    {
+     "t": "11:15:18",
+     "p": 12850.0,
+     "v": 91000,
+     "side": "sell"
+    },
+    {
+     "t": "11:15:32",
+     "p": 12850.0,
+     "v": 200000,
+     "side": "sell"
+    },
+    {
+     "t": "11:24:25",
+     "p": 12850.0,
+     "v": 100000,
+     "side": "buy"
+    }
+   ]
+  },
+  "MSB": {
+   "sym": "MSB",
+   "total_vol": 592900.0,
+   "buy_n": 0,
+   "sell_n": 1,
+   "buy_vol": 0,
+   "sell_vol": 100000,
+   "buy_val": 0.0,
+   "sell_val": 1.62,
+   "net_vol": -100000,
+   "net_val": -1.62,
+   "share": 16.9,
+   "trades": [
+    {
+     "t": "10:20:49",
+     "p": 16250.0,
+     "v": 100000,
+     "side": "sell"
+    }
+   ]
+  },
+  "STB": {
+   "sym": "STB",
+   "total_vol": 1172800.0,
+   "buy_n": 1,
+   "sell_n": 0,
+   "buy_vol": 82100,
+   "sell_vol": 0,
+   "buy_val": 5.87,
+   "sell_val": 0.0,
+   "net_vol": 82100,
+   "net_val": 5.87,
+   "share": 7.0,
+   "trades": [
+    {
+     "t": "10:58:59",
+     "p": 71500.0,
+     "v": 82100,
+     "side": "buy"
+    }
+   ]
+  },
+  "HDB": {
+   "sym": "HDB",
+   "total_vol": 6313000.0,
+   "buy_n": 4,
+   "sell_n": 2,
+   "buy_vol": 388900,
+   "sell_vol": 189000,
+   "buy_val": 8.62,
+   "sell_val": 4.15,
+   "net_vol": 199900,
+   "net_val": 4.47,
+   "share": 9.2,
+   "trades": [
+    {
+     "t": "09:18:20",
+     "p": 21900.0,
+     "v": 100000,
+     "side": "sell"
+    },
+    {
+     "t": "09:54:06",
+     "p": 22150.0,
+     "v": 104200,
+     "side": "buy"
+    },
+    {
+     "t": "09:54:16",
+     "p": 22150.0,
+     "v": 100000,
+     "side": "buy"
+    },
+    {
+     "t": "09:58:13",
+     "p": 22050.0,
+     "v": 89000,
+     "side": "sell"
+    },
+    {
+     "t": "10:03:57",
+     "p": 22150.0,
+     "v": 96800,
+     "side": "buy"
+    },
+    {
+     "t": "11:17:39",
+     "p": 22250.0,
+     "v": 87900,
+     "side": "buy"
+    }
+   ]
+  },
+  "VCB": {
+   "sym": "VCB",
+   "total_vol": 2505500.0,
+   "buy_n": 0,
+   "sell_n": 1,
+   "buy_vol": 0,
+   "sell_vol": 100000,
+   "buy_val": 0.0,
+   "sell_val": 5.26,
+   "net_vol": -100000,
+   "net_val": -5.26,
+   "share": 4.0,
+   "trades": [
+    {
+     "t": "11:17:35",
+     "p": 52600.0,
+     "v": 100000,
+     "side": "sell"
+    }
+   ]
+  },
+  "TCB": {
+   "sym": "TCB",
+   "total_vol": 5929300.0,
+   "buy_n": 0,
+   "sell_n": 1,
+   "buy_vol": 0,
+   "sell_vol": 86400,
+   "buy_val": 0.0,
+   "sell_val": 1.83,
+   "net_vol": -86400,
+   "net_val": -1.83,
+   "share": 1.5,
+   "trades": [
+    {
+     "t": "09:16:56",
+     "p": 21200.0,
+     "v": 86400,
+     "side": "sell"
+    }
+   ]
+  },
+  "HPG": {
+   "sym": "HPG",
+   "total_vol": 4675400.0,
+   "buy_n": 3,
+   "sell_n": 0,
+   "buy_vol": 291400,
+   "sell_vol": 0,
+   "buy_val": 6.1,
+   "sell_val": 0.0,
+   "net_vol": 291400,
+   "net_val": 6.1,
+   "share": 6.2,
+   "trades": [
+    {
+     "t": "09:53:12",
+     "p": 20950.0,
+     "v": 89300,
+     "side": "buy"
+    },
+    {
+     "t": "10:42:18",
+     "p": 20950.0,
+     "v": 102100,
+     "side": "buy"
+    },
+    {
+     "t": "10:43:05",
+     "p": 20950.0,
+     "v": 100000,
+     "side": "buy"
+    }
+   ]
+  },
+  "MBB": {
+   "sym": "MBB",
+   "total_vol": 5716800.0,
+   "buy_n": 0,
+   "sell_n": 1,
+   "buy_vol": 0,
+   "sell_vol": 154900,
+   "buy_val": 0.0,
+   "sell_val": 2.91,
+   "net_vol": -154900,
+   "net_val": -2.91,
+   "share": 2.7,
+   "trades": [
+    {
+     "t": "09:34:51",
+     "p": 18800.0,
+     "v": 154900,
+     "side": "sell"
+    }
+   ]
+  },
+  "SHB": {
+   "sym": "SHB",
+   "total_vol": 9395800.0,
+   "buy_n": 23,
+   "sell_n": 8,
+   "buy_vol": 2746200,
+   "sell_vol": 966700,
+   "buy_val": 29.39,
+   "sell_val": 10.34,
+   "net_vol": 1779500,
+   "net_val": 19.05,
+   "share": 39.5,
+   "trades": [
+    {
+     "t": "09:16:00",
+     "p": 10700.0,
+     "v": 160000,
+     "side": "sell"
+    },
+    {
+     "t": "09:38:44",
+     "p": 10700.0,
+     "v": 87600,
+     "side": "sell"
+    },
+    {
+     "t": "09:38:44",
+     "p": 10700.0,
+     "v": 100000,
+     "side": "sell"
+    },
+    {
+     "t": "09:40:01",
+     "p": 10700.0,
+     "v": 161700,
+     "side": "sell"
+    },
+    {
+     "t": "09:52:26",
+     "p": 10700.0,
+     "v": 83300,
+     "side": "buy"
+    },
+    {
+     "t": "09:52:31",
+     "p": 10700.0,
+     "v": 100000,
+     "side": "buy"
+    },
+    {
+     "t": "09:52:31",
+     "p": 10700.0,
+     "v": 100000,
+     "side": "buy"
+    },
+    {
+     "t": "09:53:13",
+     "p": 10700.0,
+     "v": 101000,
+     "side": "sell"
+    },
+    {
+     "t": "09:54:10",
+     "p": 10700.0,
+     "v": 200000,
+     "side": "buy"
+    },
+    {
+     "t": "09:54:10",
+     "p": 10700.0,
+     "v": 98700,
+     "side": "buy"
+    },
+    {
+     "t": "09:54:17",
+     "p": 10700.0,
+     "v": 142400,
+     "side": "sell"
+    },
+    {
+     "t": "09:54:31",
+     "p": 10700.0,
+     "v": 131600,
+     "side": "buy"
+    },
+    {
+     "t": "09:57:07",
+     "p": 10700.0,
+     "v": 100000,
+     "side": "buy"
+    },
+    {
+     "t": "09:57:07",
+     "p": 10700.0,
+     "v": 200000,
+     "side": "buy"
+    },
+    {
+     "t": "09:57:07",
+     "p": 10700.0,
+     "v": 132100,
+     "side": "buy"
+    },
+    {
+     "t": "09:58:03",
+     "p": 10700.0,
+     "v": 92600,
+     "side": "buy"
+    },
+    {
+     "t": "10:21:06",
+     "p": 10700.0,
+     "v": 300000,
+     "side": "buy"
+    },
+    {
+     "t": "10:25:15",
+     "p": 10700.0,
+     "v": 92600,
+     "side": "buy"
+    },
+    {
+     "t": "10:25:15",
+     "p": 10700.0,
+     "v": 150100,
+     "side": "buy"
+    },
+    {
+     "t": "10:29:23",
+     "p": 10700.0,
+     "v": 85300,
+     "side": "buy"
+    },
+    {
+     "t": "10:29:26",
+     "p": 10700.0,
+     "v": 96700,
+     "side": "sell"
+    },
+    {
+     "t": "10:32:13",
+     "p": 10700.0,
+     "v": 97700,
+     "side": "buy"
+    },
+    {
+     "t": "10:32:33",
+     "p": 10700.0,
+     "v": 117300,
+     "side": "sell"
+    },
+    {
+     "t": "10:38:02",
+     "p": 10700.0,
+     "v": 100000,
+     "side": "buy"
+    },
+    {
+     "t": "11:05:27",
+     "p": 10700.0,
+     "v": 100000,
+     "side": "buy"
+    },
+    {
+     "t": "11:09:49",
+     "p": 10700.0,
+     "v": 100000,
+     "side": "buy"
+    },
+    {
+     "t": "11:10:05",
+     "p": 10700.0,
+     "v": 80000,
+     "side": "buy"
+    },
+    {
+     "t": "11:27:09",
+     "p": 10700.0,
+     "v": 99900,
+     "side": "buy"
+    },
+    {
+     "t": "11:27:09",
+     "p": 10700.0,
+     "v": 116300,
+     "side": "buy"
+    },
+    {
+     "t": "11:27:09",
+     "p": 10700.0,
+     "v": 95900,
+     "side": "buy"
+    },
+    {
+     "t": "11:28:06",
+     "p": 10750.0,
+     "v": 90100,
+     "side": "buy"
+    }
+   ]
+  },
+  "GEX": {
+   "sym": "GEX",
+   "total_vol": 3709900.0,
+   "buy_n": 0,
+   "sell_n": 2,
+   "buy_vol": 0,
+   "sell_vol": 200000,
+   "buy_val": 0.0,
+   "sell_val": 4.21,
+   "net_vol": -200000,
+   "net_val": -4.21,
+   "share": 5.4,
+   "trades": [
+    {
+     "t": "11:02:27",
+     "p": 21050.0,
+     "v": 100000,
+     "side": "sell"
+    },
+    {
+     "t": "11:02:43",
+     "p": 21000.0,
+     "v": 100000,
+     "side": "sell"
+    }
+   ]
+  },
+  "VPB": {
+   "sym": "VPB",
+   "total_vol": 3692200.0,
+   "buy_n": 2,
+   "sell_n": 2,
+   "buy_vol": 257600,
+   "sell_vol": 247000,
+   "buy_val": 5.6,
+   "sell_val": 5.33,
+   "net_vol": 10600,
+   "net_val": 0.27,
+   "share": 13.7,
+   "trades": [
+    {
+     "t": "10:09:38",
+     "p": 21600.0,
+     "v": 147000,
+     "side": "sell"
+    },
+    {
+     "t": "10:14:52",
+     "p": 21500.0,
+     "v": 100000,
+     "side": "sell"
+    },
+    {
+     "t": "10:19:28",
+     "p": 21600.0,
+     "v": 97000,
+     "side": "buy"
+    },
+    {
+     "t": "10:41:22",
+     "p": 21800.0,
+     "v": 160600,
+     "side": "buy"
+    }
+   ]
+  },
+  "VHM": {
+   "sym": "VHM",
+   "total_vol": 1182500.0,
+   "buy_n": 1,
+   "sell_n": 0,
+   "buy_vol": 116800,
+   "sell_vol": 0,
+   "buy_val": 7.25,
+   "sell_val": 0.0,
+   "net_vol": 116800,
+   "net_val": 7.25,
+   "share": 9.9,
+   "trades": [
+    {
+     "t": "09:36:07",
+     "p": 62100.0,
+     "v": 116800,
+     "side": "buy"
+    }
+   ]
+  },
+  "KDH": {
+   "sym": "KDH",
+   "total_vol": 4851900.0,
+   "buy_n": 1,
+   "sell_n": 0,
+   "buy_vol": 150400,
+   "sell_vol": 0,
+   "buy_val": 2.27,
+   "sell_val": 0.0,
+   "net_vol": 150400,
+   "net_val": 2.27,
+   "share": 3.1,
+   "trades": [
+    {
+     "t": "09:45:11",
+     "p": 15100.0,
+     "v": 150400,
+     "side": "buy"
+    }
+   ]
+  },
+  "VND": {
+   "sym": "VND",
+   "total_vol": 5183500.0,
+   "buy_n": 2,
+   "sell_n": 4,
+   "buy_vol": 306800,
+   "sell_vol": 419100,
+   "buy_val": 4.36,
+   "sell_val": 5.95,
+   "net_vol": -112300,
+   "net_val": -1.59,
+   "share": 14.0,
+   "trades": [
+    {
+     "t": "09:18:52",
+     "p": 14200.0,
+     "v": 100000,
+     "side": "sell"
+    },
+    {
+     "t": "09:19:52",
+     "p": 14200.0,
+     "v": 84000,
+     "side": "sell"
+    },
+    {
+     "t": "09:40:36",
+     "p": 14150.0,
+     "v": 150000,
+     "side": "sell"
+    },
+    {
+     "t": "09:47:40",
+     "p": 14200.0,
+     "v": 200000,
+     "side": "buy"
+    },
+    {
+     "t": "10:02:58",
+     "p": 14250.0,
+     "v": 106800,
+     "side": "buy"
+    },
+    {
+     "t": "11:24:22",
+     "p": 14250.0,
+     "v": 85100,
+     "side": "sell"
+    }
+   ]
+  },
+  "PVT": {
+   "sym": "PVT",
+   "total_vol": 2703700.0,
+   "buy_n": 0,
+   "sell_n": 3,
+   "buy_vol": 0,
+   "sell_vol": 287900,
+   "buy_val": 0.0,
+   "sell_val": 5.88,
+   "net_vol": -287900,
+   "net_val": -5.88,
+   "share": 10.6,
+   "trades": [
+    {
+     "t": "09:46:14",
+     "p": 20700.0,
+     "v": 90000,
+     "side": "sell"
+    },
+    {
+     "t": "11:15:11",
+     "p": 20350.0,
+     "v": 97900,
+     "side": "sell"
+    },
+    {
+     "t": "11:20:11",
+     "p": 20200.0,
+     "v": 100000,
+     "side": "sell"
+    }
+   ]
+  },
+  "POW": {
+   "sym": "POW",
+   "total_vol": 3827400.0,
+   "buy_n": 1,
+   "sell_n": 0,
+   "buy_vol": 99300,
+   "sell_vol": 0,
+   "buy_val": 1.29,
+   "sell_val": 0.0,
+   "net_vol": 99300,
+   "net_val": 1.29,
+   "share": 2.6,
+   "trades": [
+    {
+     "t": "10:19:14",
+     "p": 13000.0,
+     "v": 99300,
+     "side": "buy"
+    }
+   ]
+  },
+  "DXG": {
+   "sym": "DXG",
+   "total_vol": 3578000.0,
+   "buy_n": 3,
+   "sell_n": 2,
+   "buy_vol": 335700,
+   "sell_vol": 348500,
+   "buy_val": 3.68,
+   "sell_val": 3.84,
+   "net_vol": -12800,
+   "net_val": -0.16,
+   "share": 19.1,
+   "trades": [
+    {
+     "t": "09:15:09",
+     "p": 10850.0,
+     "v": 83900,
+     "side": "buy"
+    },
+    {
+     "t": "10:10:03",
+     "p": 10950.0,
+     "v": 100000,
+     "side": "buy"
+    },
+    {
+     "t": "10:15:39",
+     "p": 11050.0,
+     "v": 151800,
+     "side": "buy"
+    },
+    {
+     "t": "10:21:26",
+     "p": 11000.0,
+     "v": 258500,
+     "side": "sell"
+    },
+    {
+     "t": "11:13:07",
+     "p": 11050.0,
+     "v": 90000,
+     "side": "sell"
+    }
+   ]
+  },
+  "NVL": {
+   "sym": "NVL",
+   "total_vol": 3288800.0,
+   "buy_n": 0,
+   "sell_n": 2,
+   "buy_vol": 0,
+   "sell_vol": 245100,
+   "buy_val": 0.0,
+   "sell_val": 2.52,
+   "net_vol": -245100,
+   "net_val": -2.52,
+   "share": 7.5,
+   "trades": [
+    {
+     "t": "11:05:33",
+     "p": 10300.0,
+     "v": 145100,
+     "side": "sell"
+    },
+    {
+     "t": "11:05:34",
+     "p": 10300.0,
+     "v": 100000,
+     "side": "sell"
+    }
+   ]
+  },
+  "VSC": {
+   "sym": "VSC",
+   "total_vol": 2437800.0,
+   "buy_n": 0,
+   "sell_n": 1,
+   "buy_vol": 0,
+   "sell_vol": 100000,
+   "buy_val": 0.0,
+   "sell_val": 1.33,
+   "net_vol": -100000,
+   "net_val": -1.33,
+   "share": 4.1,
+   "trades": [
+    {
+     "t": "10:19:46",
+     "p": 13300.0,
+     "v": 100000,
+     "side": "sell"
+    }
+   ]
+  },
+  "HCM": {
+   "sym": "HCM",
+   "total_vol": 1370100.0,
+   "buy_n": 0,
+   "sell_n": 1,
+   "buy_vol": 0,
+   "sell_vol": 169800,
+   "buy_val": 0.0,
+   "sell_val": 3.9,
+   "net_vol": -169800,
+   "net_val": -3.9,
+   "share": 12.4,
+   "trades": [
+    {
+     "t": "09:44:10",
+     "p": 22950.0,
+     "v": 169800,
+     "side": "sell"
+    }
+   ]
+  },
+  "PNJ": {
+   "sym": "PNJ",
+   "total_vol": 1618800.0,
+   "buy_n": 2,
+   "sell_n": 0,
+   "buy_vol": 175700,
+   "sell_vol": 0,
+   "buy_val": 2.54,
+   "sell_val": 0.0,
+   "net_vol": 175700,
+   "net_val": 2.54,
+   "share": 10.9,
+   "trades": [
+    {
+     "t": "11:13:22",
+     "p": 14450.0,
+     "v": 86100,
+     "side": "buy"
+    },
+    {
+     "t": "11:14:20",
+     "p": 14500.0,
+     "v": 89600,
+     "side": "buy"
+    }
+   ]
+  },
+  "DIG": {
+   "sym": "DIG",
+   "total_vol": 2147300.0,
+   "buy_n": 0,
+   "sell_n": 1,
+   "buy_vol": 0,
+   "sell_vol": 100000,
+   "buy_val": 0.0,
+   "sell_val": 1.0,
+   "net_vol": -100000,
+   "net_val": -1.0,
+   "share": 4.7,
+   "trades": [
+    {
+     "t": "09:43:03",
+     "p": 10000.0,
+     "v": 100000,
+     "side": "sell"
+    }
+   ]
+  },
+  "KOS": {
+   "sym": "KOS",
+   "total_vol": 1977700.0,
+   "buy_n": 0,
+   "sell_n": 1,
+   "buy_vol": 0,
+   "sell_vol": 132700,
+   "buy_val": 0.0,
+   "sell_val": 0.45,
+   "net_vol": -132700,
+   "net_val": -0.45,
+   "share": 6.7,
+   "trades": [
+    {
+     "t": "10:49:50",
+     "p": 3400.0,
+     "v": 132700,
+     "side": "sell"
+    }
+   ]
+  },
+  "HSL": {
+   "sym": "HSL",
+   "total_vol": 237900.0,
+   "buy_n": 2,
+   "sell_n": 0,
+   "buy_vol": 199800,
+   "sell_vol": 0,
+   "buy_val": 1.5,
+   "sell_val": 0.0,
+   "net_vol": 199800,
+   "net_val": 1.5,
+   "share": 84.0,
+   "trades": [
+    {
+     "t": "11:19:47",
+     "p": 7500.0,
+     "v": 116900,
+     "side": "buy"
+    },
+    {
+     "t": "11:19:47",
+     "p": 7500.0,
+     "v": 82900,
+     "side": "buy"
+    }
+   ]
+  },
+  "KHG": {
+   "sym": "KHG",
+   "total_vol": 4356800.0,
+   "buy_n": 2,
+   "sell_n": 0,
+   "buy_vol": 291700,
+   "sell_vol": 0,
+   "buy_val": 1.35,
+   "sell_val": 0.0,
+   "net_vol": 291700,
+   "net_val": 1.35,
+   "share": 6.7,
+   "trades": [
+    {
+     "t": "11:00:51",
+     "p": 4600.0,
+     "v": 117400,
+     "side": "buy"
+    },
+    {
+     "t": "11:06:21",
+     "p": 4620.0,
+     "v": 174300,
+     "side": "buy"
+    }
+   ]
+  },
+  "ST8": {
+   "sym": "ST8",
+   "total_vol": 162900.0,
+   "buy_n": 1,
+   "sell_n": 0,
+   "buy_vol": 84700,
+   "sell_vol": 0,
+   "buy_val": 0.17,
+   "sell_val": 0.0,
+   "net_vol": 84700,
+   "net_val": 0.17,
+   "share": 52.0,
+   "trades": [
+    {
+     "t": "10:07:41",
+     "p": 2050.0,
+     "v": 84700,
+     "side": "buy"
+    }
+   ]
+  }
+ },
+ "source": "KBS"
+}
