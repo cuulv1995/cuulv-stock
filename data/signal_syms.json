@@ -1,17 +1,19 @@
 [
  "MSB",
  "NT2",
+ "POW",
  "DBC",
- "VPL",
- "VIC",
- "VJC",
- "TAL",
  "TV2",
+ "VPL",
+ "VJC",
+ "VIC",
+ "REE",
+ "TAL",
  "VPI",
  "BAF",
  "STB",
- "MSN",
  "SIP",
  "NLG",
- "POW"
+ "DXG",
+ "HDG"
 ]
