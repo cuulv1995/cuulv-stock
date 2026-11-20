@@ -1,14 +1,9 @@
 [
  "MSB",
- "POW",
- "CTI",
  "VPL",
- "NAB",
- "NT2",
- "FRT",
- "TV2",
  "VPI",
- "TAL",
- "DBC",
- "BAF"
+ "CTI",
+ "POW",
+ "TV2",
+ "DBC"
 ]
