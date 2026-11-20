@@ -1,9 +1,16 @@
 [
  "MSB",
+ "TCH",
+ "STB",
  "VPL",
- "VPI",
+ "MSH",
+ "NT2",
+ "FRT",
  "CTI",
- "POW",
  "TV2",
- "DBC"
+ "VPI",
+ "TAL",
+ "POW",
+ "CTS",
+ "NAF"
 ]
