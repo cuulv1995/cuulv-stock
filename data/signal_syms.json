@@ -1,9 +1,14 @@
 [
  "MSB",
- "VPL",
  "NAB",
- "CTI",
  "POW",
+ "NAF",
+ "VPL",
+ "CTI",
+ "NT2",
+ "FRT",
  "TV2",
+ "TAL",
+ "VIC",
  "HDC"
 ]
